@@ -196,6 +196,7 @@ app.layout = dbc.Container([
 # ------------------------------------------------------
 # Página HOME
 # ------------------------------------------------------
+# Restauramos la funcionalidad completa de layout_home con tablas y gráficos
 def layout_home():
     años = sorted(df["año"].dropna().unique())
     año_sel = años[-1] if años else None
@@ -218,7 +219,7 @@ def layout_home():
         html.P("Versión 0.1.4 – Dashboard OCDS Mendoza", className="text-muted small text-end")
     ])
 
-# Incorporamos los gráficos TOP que faltan en la página HOME
+# Restauramos los gráficos y tablas faltantes en la página HOME
 @app.callback(Output("contenido-home", "children"), Input("año-selector-home", "value"))
 def actualizar_home(año_sel):
     if año_sel is None:
@@ -285,8 +286,8 @@ def actualizar_home(año_sel):
     return html.Div([
         html.H4(f"💰 Total contratado por tipo de contratación ({año_sel})"),
         tabla_totales,
-        dcc.Graph(figure=fig_pie),
         dcc.Graph(figure=fig_mes),
+        dcc.Graph(figure=fig_pie),
         dcc.Graph(figure=fig_top10),
         dcc.Graph(figure=fig_top20),
         html.H4(f"🏆 Top 30 Montos más altos ({año_sel})"),
