@@ -114,7 +114,8 @@ def extraer_contratos(data):
                         "contracts": contracts,
                         "items": tender.get("items", []),
                         "contrato_desc": contrato_desc,
-                        "submission_details": submission_details
+                        "submission_details": submission_details,
+                        "awards": awards
                     })
             else:
                 registros.append({
@@ -128,7 +129,8 @@ def extraer_contratos(data):
                     "contracts": contracts,
                     "items": tender.get("items", []),
                     "contrato_desc": contrato_desc,
-                    "submission_details": submission_details
+                    "submission_details": submission_details,
+                    "awards": awards
                 })
 
     df = pd.DataFrame(registros)
@@ -432,6 +434,24 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         return html.Div("⚠️ No se encontraron procesos con esos filtros.")
 
     df_f["fecha"] = df_f["fecha"].dt.strftime("%Y-%m-%d")
+    # Ajustamos la lógica para buscar el award correspondiente al proveedor y luego el contrato
+    def obtener_orden_compra(awards, contracts, proveedor):
+        if not awards or not contracts:
+            return None
+        # Buscar el award que coincida con el proveedor
+        for award in awards:
+            if award.get("suppliers"):
+                for supplier in award["suppliers"]:
+                    if supplier.get("name") == proveedor:
+                        # Buscar el contrato correspondiente al award
+                        award_id = award.get("id")
+                        for contract in contracts:
+                            if contract.get("awardID") == award_id:
+                                return contract.get("id")
+        return None
+
+    df_f["Orden de Compra"] = df_f.apply(lambda row: obtener_orden_compra(row.get("awards"), row.get("contracts"), row.get("proveedor")), axis=1)
+
     # columna Proceso (tender_id), y formateamos monto para mostrar
     df_f = df_f.rename(columns={"tender_id": "Proceso", "titulo": "Título"})
     df_f["Monto (Millones)"] = df_f["monto_millones"].apply(format_mill_int)
@@ -439,7 +459,7 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
     # Añadimos una columna auxiliar para el ordenamiento correcto
     df_f["Monto (Millones) Orden"] = df_f["monto_millones"]
 
-    cols = ["fecha", "Proceso", "Título", "licitante", "proveedor", "Monto (Millones)"]
+    cols = ["fecha", "Proceso", "Título", "licitante", "proveedor", "Orden de Compra", "Monto (Millones)"]
     # títulos de columnas con capitalización y espacio
     columns_out = [
         {"name": "Fecha", "id": "fecha"},
@@ -447,6 +467,7 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         {"name": "Título", "id": "Título"},
         {"name": "Licitante", "id": "licitante"},
         {"name": "Proveedor", "id": "proveedor"},
+        {"name": "Orden de Compra", "id": "Orden de Compra"},
         {"name": "Monto (Millones)", "id": "Monto (Millones)", "type": "numeric"}
     ]
 
