@@ -477,6 +477,7 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         columns=columns_out,  # Solo las columnas visibles
         data=df_f[cols + ["Monto (Millones) Orden"]].to_dict("records"),  # Incluimos la columna auxiliar
         style_table={"overflowX": "auto"},
+        style_cell={"fontSize": "70%"},  # Reducir el tamaño de la fuente al 70%
         page_size=20,
         sort_action="native",
         sort_mode="multi"
