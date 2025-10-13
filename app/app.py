@@ -210,8 +210,14 @@ df["monto_millones"] = df["monto"] / 1_000_000.0
 # ------------------------------------------------------
 header = dbc.Navbar(
     dbc.Container([
-        html.Img(src="/assets/marca_gov.png", height="50px"),  # Cambiar a ruta local
-        html.H1("Contrataciones Públicas de Mendoza (OCDS)", className="ms-3 text-white"),
+        html.Img(src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png", height="80px"),  # Cambiar a URL externa
+        html.H1([
+            "Contrataciones Públicas de Mendoza (OCDS)          .",
+            html.Img(
+                src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
+                style={"height": "50px", "marginLeft": "10px"}  # Ajustamos el tamaño y el margen
+            )
+        ], className="text-center text-white", style={"marginLeft": "-100%"}),  # Ajustamos el margen para centrar mejor
     ]),
     color="dark",
     dark=True,
@@ -229,7 +235,17 @@ app.layout = dbc.Container([
             dbc.NavItem(dbc.NavLink("🏷️ Insumos", href="/insumos", active="exact")),
             dbc.NavItem(dbc.NavLink("🔎 Procesos Filtrados", href="/procesos", active="exact")),
         ],
-        brand="📊 Dashboard OCDS Mendoza",
+        brand=[
+            "📊 Dashboard OCDS Mendoza",
+            html.Img(
+                src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
+                style={"height": "30px", "marginRight": "10px"}  # Ajustamos el tamaño y el margen
+            ),
+            html.Img(
+                src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
+                style={"height": "30px", "marginLeft": "10px"}  # Ajustamos el tamaño y el margen
+            )
+        ],
         color="primary",
         dark=True,
         className="mb-4"
@@ -325,6 +341,7 @@ def actualizar_home(año_sel):
         columns=[{"name": c, "id": c} for c in cols_top30],
         data=top30[cols_top30].to_dict("records"),
         style_table={"overflowX": "auto"},
+        style_cell={"fontSize": "70%"},  # Reducir el tamaño de la fuente al 70%
         page_size=15,
         sort_action="native",
     )
