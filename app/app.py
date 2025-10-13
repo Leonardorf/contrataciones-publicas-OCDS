@@ -219,7 +219,7 @@ def layout_home():
         html.P("Versión 0.1.4 – Dashboard OCDS Mendoza", className="text-muted small text-end")
     ])
 
-# Restauramos los gráficos y tablas faltantes en la página HOME
+# Ajustamos los tooltips para eliminar los decimales en los montos
 @app.callback(Output("contenido-home", "children"), Input("año-selector-home", "value"))
 def actualizar_home(año_sel):
     if año_sel is None:
@@ -246,27 +246,27 @@ def actualizar_home(año_sel):
 
     fig_mes = px.line(df_mes, x="mes", y="total_monto", title=f"Evolución mensual ({año_sel})",
                       labels={"mes": "Mes", "total_monto": "Monto (Millones)"})
-    fig_mes.update_traces(hovertemplate="Mes=%{x}<br>Monto=%{y:.3f}M")
+    fig_mes.update_traces(hovertemplate="Mes=%{x}<br>Monto=%{y:.0f}M")
 
     # --- Monto por tipo de contratación (gráfico) ---
     dist_tipo = df_f.groupby("tipo_contratacion", as_index=False)["monto_millones"].sum()
     dist_tipo = dist_tipo[dist_tipo["monto_millones"] > 0]
     fig_pie = px.pie(dist_tipo, values="monto_millones", names="tipo_contratacion", title=f"Monto por tipo de contratación ({año_sel})")
-    fig_pie.update_traces(hovertemplate="%{label}: %{value:.3f}M")
+    fig_pie.update_traces(hovertemplate="%{label}: %{value:.0f}M")
 
     # --- Top 10 licitantes (año) ---
     top10 = df_f.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(10, "monto_millones")
     fig_top10 = px.bar(top10, x="monto_millones", y="licitante", orientation="h",
                        title=f"Top 10 Licitantes ({año_sel})",
                        labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"})
-    fig_top10.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.3f}M")
+    fig_top10.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
 
     # --- Top 20 licitantes (total) ---
     top20 = df.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(20, "monto_millones")
     fig_top20 = px.bar(top20, x="monto_millones", y="licitante", orientation="h",
                        title="Top 20 Licitantes (Total)",
                        labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"})
-    fig_top20.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.3f}M")
+    fig_top20.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
 
     # --- Top 30 montos (tabla) ---
     top30 = df_f.sort_values("monto", ascending=False).head(30).copy()
