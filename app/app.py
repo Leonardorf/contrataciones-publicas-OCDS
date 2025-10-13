@@ -5,6 +5,12 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import json, re, os, requests
+import flask
+
+# Habilitar logs detallados para Flask
+import logging
+# Configurar logs para que se muestren en la terminal
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler()])
 
 # ------------------------------------------------------
 # CONFIGURACIÓN BASE
@@ -16,6 +22,40 @@ app = dash.Dash(
 )
 app.title = "Contrataciones Públicas de Mendoza (OCDS)"
 server = app.server
+
+# Configuración manual para servir archivos estáticos desde la carpeta 'assets'
+# Agregar mensajes de depuración en la función para servir archivos estáticos
+@app.server.route('/assets/<path:path>')
+def serve_static_assets(path):
+    logging.debug(f"Intentando servir archivo estático: {path}")
+    try:
+        return flask.send_from_directory('assets', path)
+    except Exception as e:
+        logging.error(f"Error al servir archivo estático: {e}")
+        raise
+
+# Ruta de prueba para servir un archivo específico
+# Actualizar la función para usar la ruta absoluta de la carpeta 'assets'
+@app.server.route('/test-file')
+def serve_test_file():
+    try:
+        ruta_absoluta = os.path.abspath('assets')
+        logging.debug(f"Ruta absoluta de la carpeta 'assets': {ruta_absoluta}")
+        return flask.send_from_directory(ruta_absoluta, 'texto.txt')
+    except Exception as e:
+        logging.error(f"Error al servir archivo de prueba: {e}")
+        return f"Error al servir archivo de prueba: {e}", 500
+
+# Agregar mensajes de depuración para el archivo 'marca_gov.png'
+@app.server.route('/test-image')
+def serve_test_image():
+    try:
+        ruta_absoluta = os.path.abspath('assets')
+        logging.debug(f"Intentando servir 'marca_gov.png' desde: {ruta_absoluta}")
+        return flask.send_from_directory(ruta_absoluta, 'marca_gov.png')
+    except Exception as e:
+        logging.error(f"Error al servir 'marca_gov.png': {e}")
+        return f"Error al servir 'marca_gov.png': {e}", 500
 
 # ------------------------------------------------------
 # FUNCIONES AUXILIARES
@@ -142,6 +182,10 @@ def format_mill_hover(x, decimals=3):
     # mostramos con 3 decimales (ej: 54137.600) y añadimos 'M'
     return f"{val:,.3f}".replace(",", ".") + "M"
 
+# Función para capitalizar títulos
+def capitalize_title(title):
+    return " ".join(word.capitalize() for word in title.split())
+
 # ------------------------------------------------------
 # CARGA DE DATOS y normalizaciones
 # ------------------------------------------------------
@@ -164,7 +208,7 @@ df["monto_millones"] = df["monto"] / 1_000_000.0
 # ------------------------------------------------------
 header = dbc.Navbar(
     dbc.Container([
-        html.Img(src="/assets/escudo-mendoza.png", height="50px"),  # Cambiar a ruta local
+        html.Img(src="/assets/marca_gov.png", height="50px"),  # Cambiar a ruta local
         html.H1("Contrataciones Públicas de Mendoza (OCDS)", className="ms-3 text-white"),
     ]),
     color="dark",
@@ -190,7 +234,7 @@ app.layout = dbc.Container([
     ),
     dcc.Location(id="url"),
     html.Div(id="page-content"),
-    html.P("Versión 0.1.4 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+    html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
 
 # ------------------------------------------------------
@@ -216,7 +260,7 @@ def layout_home():
         ),
         html.Div(id="contenido-home"),
         html.Hr(),
-        html.P("Versión 0.1.4 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+        html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
     ])
 
 # Ajustamos los tooltips para eliminar los decimales en los montos
@@ -244,27 +288,27 @@ def actualizar_home(año_sel):
     df_mes["mes"] = df_mes["fecha"].dt.month
     df_mes = df_mes.groupby("mes", as_index=False).agg(total_monto=("monto_millones", "sum"))
 
-    fig_mes = px.line(df_mes, x="mes", y="total_monto", title=f"Evolución mensual ({año_sel})",
+    fig_mes = px.line(df_mes, x="mes", y="total_monto", title=capitalize_title(f"Evolución mensual ({año_sel})"),
                       labels={"mes": "Mes", "total_monto": "Monto (Millones)"})
     fig_mes.update_traces(hovertemplate="Mes=%{x}<br>Monto=%{y:.0f}M")
 
     # --- Monto por tipo de contratación (gráfico) ---
     dist_tipo = df_f.groupby("tipo_contratacion", as_index=False)["monto_millones"].sum()
     dist_tipo = dist_tipo[dist_tipo["monto_millones"] > 0]
-    fig_pie = px.pie(dist_tipo, values="monto_millones", names="tipo_contratacion", title=f"Monto por tipo de contratación ({año_sel})")
+    fig_pie = px.pie(dist_tipo, values="monto_millones", names="tipo_contratacion", title=capitalize_title(f"Monto por tipo de contratación ({año_sel})"))
     fig_pie.update_traces(hovertemplate="%{label}: %{value:.0f}M")
 
     # --- Top 10 licitantes (año) ---
     top10 = df_f.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(10, "monto_millones")
     fig_top10 = px.bar(top10, x="monto_millones", y="licitante", orientation="h",
-                       title=f"Top 10 Licitantes ({año_sel})",
+                       title=capitalize_title(f"Top 10 Licitantes ({año_sel})"),
                        labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"})
     fig_top10.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
 
     # --- Top 20 licitantes (total) ---
     top20 = df.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(20, "monto_millones")
     fig_top20 = px.bar(top20, x="monto_millones", y="licitante", orientation="h",
-                       title="Top 20 Licitantes (Total)",
+                       title=capitalize_title("Top 20 Licitantes (Total)"),
                        labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"})
     fig_top20.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
 
@@ -284,13 +328,13 @@ def actualizar_home(año_sel):
     )
 
     return html.Div([
-        html.H4(f"💰 Total contratado por tipo de contratación ({año_sel})"),
+        html.H4(f"💰 Total Contratado Por Tipo De Contratación ({año_sel})"),
         tabla_totales,
         dcc.Graph(figure=fig_mes),
         dcc.Graph(figure=fig_pie),
         dcc.Graph(figure=fig_top10),
         dcc.Graph(figure=fig_top20),
-        html.H4(f"🏆 Top 30 Montos más altos ({año_sel})"),
+        html.H4(f"🏆 Top 30 Montos Más Altos ({año_sel})"),
         tabla_top30
     ])
 
@@ -341,7 +385,7 @@ def actualizar_insumos(año_sel):
         page_size=15,
         sort_action="native"
     )
-    fig = px.bar(df_top, x="Monto (Millones)", y="Descripción corta", color="Licitante", orientation="h", title=f"Top 30 Insumos Más Contratados ({año_sel})")
+    fig = px.bar(df_top, x="Monto (Millones)", y="Descripción corta", color="Licitante", orientation="h", title=capitalize_title(f"Top 30 Insumos Más Contratados ({año_sel})"))
     fig.update_traces(hovertemplate="Descripción=%{y}<br>Monto=%{x}")
 
     return html.Div([tabla, dcc.Graph(figure=fig)])
@@ -365,7 +409,7 @@ def layout_procesos():
         ], className="mb-3"),
         html.Div(id="tabla-procesos"),
         html.Hr(),
-        html.P("Versión 0.1.4 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+        html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
     ])
 
 @app.callback(
