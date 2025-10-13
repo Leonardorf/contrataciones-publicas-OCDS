@@ -436,6 +436,9 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
     df_f = df_f.rename(columns={"tender_id": "Proceso", "titulo": "Título"})
     df_f["Monto (Millones)"] = df_f["monto_millones"].apply(format_mill_int)
 
+    # Añadimos una columna auxiliar para el ordenamiento correcto
+    df_f["Monto (Millones) Orden"] = df_f["monto_millones"]
+
     cols = ["fecha", "Proceso", "Título", "licitante", "proveedor", "Monto (Millones)"]
     # títulos de columnas con capitalización y espacio
     columns_out = [
@@ -444,15 +447,18 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         {"name": "Título", "id": "Título"},
         {"name": "Licitante", "id": "licitante"},
         {"name": "Proveedor", "id": "proveedor"},
-        {"name": "Monto (Millones)", "id": "Monto (Millones)"}
+        {"name": "Monto (Millones)", "id": "Monto (Millones)", "type": "numeric"}
     ]
+
+    # Incluimos la columna auxiliar en los datos pero no en las columnas visibles
     tabla = dash_table.DataTable(
         id="tabla-procesos-filter",
-        columns=columns_out,
-        data=df_f[["fecha", "Proceso", "Título", "licitante", "proveedor", "Monto (Millones)"]].to_dict("records"),
+        columns=columns_out,  # Solo las columnas visibles
+        data=df_f[cols + ["Monto (Millones) Orden"]].to_dict("records"),  # Incluimos la columna auxiliar
         style_table={"overflowX": "auto"},
         page_size=20,
-        sort_action="native"
+        sort_action="native",
+        sort_mode="multi"
     )
     return tabla
 
