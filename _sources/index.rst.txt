@@ -69,6 +69,17 @@ Tabla de Contenidos
    methodology
    api
 
+Información
+===========
+
+.. toctree::
+   :maxdepth: 1
+
+   about
+   data_sources
+   license
+   faq
+
 Librerías Utilizadas
 ====================
 En este proyecto se han utilizado diversas librerías de Python que son fundamentales en el ámbito de la ciencia de datos y el desarrollo de aplicaciones:
@@ -96,6 +107,5 @@ Información Adicional
 =====================
 Para más información sobre el estándar OCDS, visite: https://www.open-contracting.org/.
 
-Para detalles sobre el concurso, consulte: https://udesa.edu.ar/contar-con-datos.
 Para detalles sobre el sistema Comprar- Mendoza :https://comprar.mendoza.gov.ar/.
 

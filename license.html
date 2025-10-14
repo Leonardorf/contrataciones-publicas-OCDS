@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Uso &mdash; documentación de Contrataciones Públicas de Mendoza (OCDS) - </title>
+  <title>Licencia &mdash; documentación de Contrataciones Públicas de Mendoza (OCDS) - </title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/custom.css?v=ba49ce02" />
@@ -23,8 +23,8 @@
     <link rel="author" title="Sobre este documento" href="about.html" />
     <link rel="index" title="Índice" href="genindex.html" />
     <link rel="search" title="Búsqueda" href="search.html" />
-    <link rel="next" title="Metodología" href="methodology.html" />
-    <link rel="prev" title="Introducción" href="introduction.html" /> 
+    <link rel="next" title="Preguntas frecuentes (FAQ)" href="faq.html" />
+    <link rel="prev" title="Datos y fuentes" href="data_sources.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,16 +48,16 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contenido Principal:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introducción</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Uso</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#github-codespaces">GitHub Codespaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Uso</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#github-codespaces">GitHub Codespaces</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="methodology.html">Metodología</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API de la aplicación</a></li>
 </ul>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="about.html">Acerca de</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="about.html#objetivos">Objetivos</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about.html#contacto">Contacto</a></li>
@@ -68,8 +68,8 @@
 <li class="toctree-l2"><a class="reference internal" href="data_sources.html#notas-sobre-datos">Notas sobre datos</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="license.html">Licencia</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="license.html#mit">MIT</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Licencia</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#mit">MIT</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Preguntas frecuentes (FAQ)</a><ul>
@@ -95,9 +95,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Uso</li>
+      <li class="breadcrumb-item active">Licencia</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/usage.rst.txt" rel="nofollow"> Ver código fuente de la página</a>
+            <a href="_sources/license.rst.txt" rel="nofollow"> Ver código fuente de la página</a>
       </li>
   </ul>
   <hr/>
@@ -105,35 +105,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="uso">
-<h1>Uso<a class="headerlink" href="#uso" title="Link to this heading"></a></h1>
-<p>Para ejecutar la aplicación Dash en local (Windows PowerShell):</p>
-<ol class="arabic simple">
-<li><p>Cree y active un entorno virtual.</p></li>
-<li><p>Instale dependencias y ejecute la app.</p></li>
-</ol>
-<p>Comandos en PowerShell:</p>
-<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="n">py</span> <span class="p">-</span><span class="n">3</span> <span class="n">-m</span> <span class="n">venv</span> <span class="p">.</span><span class="n">venv</span>
-<span class="p">&amp;</span> <span class="s2">&quot;.\.venv\Scripts\Activate.ps1&quot;</span>
-<span class="n">python</span> <span class="n">-m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">-r</span> <span class="n">requirements</span><span class="p">.</span><span class="n">txt</span>
-
-<span class="c"># Dataset (opcional: por defecto usa una URL pública)</span>
-<span class="nv">$env:OCDS_JSON_URL</span> <span class="p">=</span> <span class="s2">&quot;https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json&quot;</span>
-<span class="nv">$env:PORT</span> <span class="p">=</span> <span class="s2">&quot;8050&quot;</span>
-
-<span class="n">python</span> <span class="n">app</span><span class="p">\</span><span class="n">app</span><span class="p">.</span><span class="n">py</span>
-</pre></div>
-</div>
-<p>Vea la aplicación en el navegador en la URL que se indique en la consola.</p>
-<section id="github-codespaces">
-<h2>GitHub Codespaces<a class="headerlink" href="#github-codespaces" title="Link to this heading"></a></h2>
-<p>Al abrir el repositorio en Codespaces, el contenedor instala dependencias automáticamente.
-Luego ejecute:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">OCDS_JSON_URL</span><span class="o">=</span><span class="s2">&quot;https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">PORT</span><span class="o">=</span><span class="m">8050</span>
-python<span class="w"> </span>app/app.py
-</pre></div>
-</div>
+  <section id="licencia">
+<h1>Licencia<a class="headerlink" href="#licencia" title="Link to this heading"></a></h1>
+<p>El código del proyecto puede distribuirse bajo la licencia MIT salvo que se indique lo contrario.
+El contenido de la documentación puede distribuirse bajo CC BY 4.0.</p>
+<section id="mit">
+<h2>MIT<a class="headerlink" href="#mit" title="Link to this heading"></a></h2>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the «Software»), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>[…]</p>
 </section>
 </section>
 
@@ -141,8 +125,8 @@ python<span class="w"> </span>app/app.py
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pie de página">
-        <a href="introduction.html" class="btn btn-neutral float-left" title="Introducción" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Anterior</a>
-        <a href="methodology.html" class="btn btn-neutral float-right" title="Metodología" accesskey="n" rel="next">Siguiente <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="data_sources.html" class="btn btn-neutral float-left" title="Datos y fuentes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Anterior</a>
+        <a href="faq.html" class="btn btn-neutral float-right" title="Preguntas frecuentes (FAQ)" accesskey="n" rel="next">Siguiente <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
