@@ -29,4 +29,4 @@ Start-Sleep -Seconds 3
 
 Write-Host "[3/3] Abriendo túnel con Cloudflare (cloudflared)..."
 # El túnel imprime una URL pública https://xxxx.trycloudflare.com
-cloudflared tunnel --url http://$Host:$Port
+cloudflared tunnel --url "http://${Host}:${Port}"
