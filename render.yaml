@@ -4,12 +4,14 @@ services:
     runtime: python
     plan: free
     repo: https://github.com/Leonardorf/contrataciones-publicas-OCDS
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app.app:server --bind 0.0.0.0:$PORT --workers=2 --timeout=120
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: gunicorn app.app:server --bind 0.0.0.0:$PORT --workers=1 --timeout=120
     autoDeploy: true
     envVars:
-      PYTHON_VERSION: 3.11.9
-      # Define en el panel si quieres sobrescribir; si NO lo defines usará la URL por defecto en el código
-      OCDS_JSON_URL: null
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: OCDS_JSON_URL
+        value: ""   # Déjalo vacío para que use la URL por defecto; puedes sobreescribirlo en el panel
+        sync: false
     healthCheckPath: /health
     # healthCheckTimeout: 10  # opcional
