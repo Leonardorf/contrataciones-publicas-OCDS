@@ -3,16 +3,6 @@
 ## Introducción
 Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas en la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
 
-El propósito de esta documentación es servir como guía para el comité evaluador y el jurado, destacando los aspectos técnicos, metodológicos y estéticos del proyecto.
-
-## Criterios de Evaluación
-Los trabajos presentados serán evaluados teniendo en cuenta los siguientes criterios:
-
-- **Precisión de los datos y rigor metodológico.**
-- **Impacto y aplicabilidad.**
-- **Entendimiento y síntesis.**
-- **Originalidad y creatividad.**
-- **Impacto estético y grafismo.**
 
 ## Librerías Utilizadas
 En este proyecto se han utilizado diversas librerías de Python que son fundamentales en el ámbito de la ciencia de datos y el desarrollo de aplicaciones:
