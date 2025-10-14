@@ -1,7 +1,7 @@
 # Contrataciones Públicas de Mendoza (OCDS)
 
 ## Introducción
-Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas en la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
+Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas de la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
 
 
 ## Librerías Utilizadas
