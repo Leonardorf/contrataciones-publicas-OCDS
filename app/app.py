@@ -94,6 +94,8 @@ def cargar_ocds(ruta):
     ValueError
         Si la ruta no es válida ni URL ni archivo existente.
     """
+    # Sanitizar ruta (eliminar comillas accidentales y espacios)
+    ruta = ruta.strip().strip('"').strip("'")
     if ruta.startswith("http"):
         # Añadimos timeout y un User-Agent para entornos con filtros
         headers = {"User-Agent": "OCDS-Mendoza-Dashboard/1.0"}
