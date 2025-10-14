@@ -79,7 +79,9 @@ def cargar_ocds(ruta):
         Si la ruta no es válida ni URL ni archivo existente.
     """
     if ruta.startswith("http"):
-        resp = requests.get(ruta)
+        # Añadimos timeout y un User-Agent para entornos con filtros
+        headers = {"User-Agent": "OCDS-Mendoza-Dashboard/1.0"}
+        resp = requests.get(ruta, headers=headers, timeout=30)
         resp.raise_for_status()
         return resp.json()
     elif os.path.exists(ruta):
@@ -267,7 +269,12 @@ def capitalize_title(title):
 # ------------------------------------------------------
 # CARGA DE DATOS y normalizaciones
 # ------------------------------------------------------
-URL_JSON = r"C:\Users\Leonardo Villegas\Downloads\20250810_release.json"
+# Fuente del dataset OCDS (URL o ruta local). Puede configurarse por variable de entorno
+# Ejemplo de URL oficial: https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json
+URL_JSON = os.getenv(
+    "OCDS_JSON_URL",
+    "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json",
+)
 data = cargar_ocds(URL_JSON)
 df = extraer_contratos(data)
 
@@ -681,4 +688,7 @@ def mostrar_pagina(pathname):
 
 # ------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Permitir configurar host/port por entorno (útil para Codespaces/Paas)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8050"))
+    app.run(host=host, port=port, debug=True)
