@@ -26,8 +26,8 @@ El estándar OCDS (Open Contracting Data Standard) es un marco global para la pu
 
 ## Se emplean las siguientes técnicas para asegurar el rigor metodológico:
 
-- **Validación de datos**: Uso de `pandas` para detectar y manejar valores nulos o inconsistentes.
-- **Transformación de datos**: Limpieza y normalización de los datos para adaptarlos al formato OCDS.
+- **Validación de datos**: Uso de la librería Pandas para detectar y manejar valores nulos o inconsistentes.
+- **Transformación de datos**: Limpieza y normalización de los datos gracias al uso de formato OCDS.
 - **Fuentes confiables**: Los datos provienen de sistemas oficiales como el sistema COMPRAR del Gobierno de Mendoza.
 
 ## El proyecto tiene un impacto significativo en diversas áreas:
@@ -41,7 +41,6 @@ El estándar OCDS (Open Contracting Data Standard) es un marco global para la pu
   - Evaluación de la eficiencia en las contrataciones.
   - Comparación de datos entre diferentes períodos.
  
-
 ## La plataforma está diseñada para simplificar datos complejos mediante:
 
 - **Gráficos interactivos**: Uso de `Plotly` para explorar los datos de manera visual e intuitiva.
@@ -70,4 +69,4 @@ El estándar OCDS (Open Contracting Data Standard) es un marco global para la pu
 
 ## Información Adicional
 - Para más información sobre el estándar OCDS, visite: [Open Contracting Partnership](https://www.open-contracting.org/).
-- Para detalles sobre el concurso, consulte: [Contar con Datos](https://udesa.edu.ar/contar-con-datos).
+- Para detalles sobre el sistema Comprar- Mendoza : [Comprar- Mendoza](https://comprar.mendoza.gov.ar/).
