@@ -13,12 +13,12 @@ $ErrorActionPreference = "Stop"
 
 function Wait-Port {
     param(
-        [Parameter(Mandatory=$true)][string]$Host,
-        [Parameter(Mandatory=$true)][int]$Port,
+        [Parameter(Mandatory=$true)][string]$TargetHost,
+        [Parameter(Mandatory=$true)][int]$TargetPort,
         [int]$TimeoutSec = 90
     )
     for ($i = 0; $i -lt $TimeoutSec; $i++) {
-        if (Test-NetConnection -ComputerName $Host -Port $Port -InformationLevel Quiet) {
+        if (Test-NetConnection -ComputerName $TargetHost -Port $TargetPort -InformationLevel Quiet) {
             return $true
         }
         Start-Sleep -Seconds 1
@@ -46,7 +46,7 @@ if (Test-Path $stderr) { Remove-Item $stderr -Force }
 $proc = Start-Process -FilePath "python" -ArgumentList "app\app.py" -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru -WindowStyle Minimized
 
 # Esperar a que el puerto esté escuchando
-if (-not (Wait-Port -Host $BindHost -Port [int]$Port -TimeoutSec 90)) {
+if (-not (Wait-Port -TargetHost $BindHost -TargetPort ([int]$Port) -TimeoutSec 90)) {
     Write-Host "⚠️ La app no respondió en http://${BindHost}:${Port} dentro del tiempo de espera." -ForegroundColor Yellow
     if (Test-Path $stderr) {
         Write-Host "Últimas líneas de error:" -ForegroundColor Yellow
