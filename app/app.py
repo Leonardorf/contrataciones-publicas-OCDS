@@ -423,6 +423,7 @@ app.layout = dbc.Container([
         className="mb-4"
     ),
     dcc.Location(id="url"),
+    dcc.Store(id="reload-done"),
     html.Div(id="page-content"),
     html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
@@ -482,8 +483,13 @@ def actualizar_home(año_sel):
     dash.html.Div
         Componentes con tabla de totales y gráficos correspondientes.
     """
-    if año_sel is None:
-        return html.Div("No hay datos disponibles.")
+    if año_sel is None or df.empty:
+        return html.Div([
+            html.P("No hay datos disponibles (dataset vacío o carga diferida)."),
+            html.Button("Forzar recarga de datos", id="btn-reload-data", n_clicks=0, className="btn btn-primary"),
+            dcc.Interval(id="reload-poller", interval=3000, n_intervals=0, disabled=True),
+            html.Div(id="reload-status", className="mt-2 text-muted")
+        ])
     df_f = df[df["año"] == año_sel].copy()
 
     # --- Totales por tipo (numérico) y versión para mostrar formateada ---
@@ -762,3 +768,25 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8050"))
     app.run(host=host, port=port, debug=True)
+
+# ------------------------------------------------------
+# Callbacks auxiliares para recarga de datos vía botón (cuando df vacío)
+# ------------------------------------------------------
+@app.callback(
+    Output("reload-poller", "disabled"),
+    Output("reload-status", "children"),
+    Output("reload-done", "data"),
+    Input("btn-reload-data", "n_clicks"),
+    prevent_initial_call=True
+)
+def trigger_reload(n):
+    if not n:
+        raise dash.exceptions.PreventUpdate
+    # Intento de recarga sin bloquear: usamos requests interno
+    try:
+        ensure_data_loaded(force=True)
+        if len(df) == 0:
+            return False, "Intentando recargar... aún sin filas.", None
+        return True, f"Recarga completada. Filas: {len(df)}. Refresca el año o la página.", {"rows": len(df)}
+    except Exception as e:
+        return True, f"Error al recargar: {e}", None
