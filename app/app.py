@@ -210,12 +210,29 @@ df["monto_millones"] = df["monto"] / 1_000_000.0
 # ------------------------------------------------------
 header = dbc.Navbar(
     dbc.Container([
-        html.Img(src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png", height="80px"),  # Cambiar a URL externa
-        html.H1([
-            "Contrataciones Públicas de Mendoza (OCDS)          .",
+        html.A(
             html.Img(
-                src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
-                style={"height": "50px", "marginLeft": "10px"}  # Ajustamos el tamaño y el margen
+                src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
+                style={"height": "80px"}  # Ajustamos el tamaño
+            ),
+            href="https://www.mendoza.gov.ar/compras/",  # Hipervínculo al escudo de gobierno
+            target="_blank"  # Abrir en una nueva pestaña
+        ),
+        html.H1([
+            "Contrataciones Públicas de Mendoza (OCDS)          ",
+            html.A(
+                html.Img(
+                    src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
+                    style={
+                        "height": "50px",
+                        "marginLeft": "100px",
+                        "backgroundColor": "white",  # Fondo blanco
+                        "padding": "5px",  # Espaciado interno
+                        "borderRadius": "5px"  # Bordes redondeados
+                    }
+                ),
+                href="https://www.open-contracting.org/",  # Hipervínculo a Open Contracting
+                target="_blank"  # Abrir en una nueva pestaña
             )
         ], className="text-center text-white", style={"marginLeft": "-100%"}),  # Ajustamos el margen para centrar mejor
     ]),
@@ -239,11 +256,13 @@ app.layout = dbc.Container([
             "📊 Dashboard OCDS Mendoza",
             html.Img(
                 src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
-                style={"height": "30px", "marginRight": "10px"}  # Ajustamos el tamaño y el margen
+                style={"height": "50px", "marginRight": "10px"}  # Ajustamos el tamaño y el margen
             ),
             html.Img(
                 src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
-                style={"height": "30px", "marginLeft": "10px"}  # Ajustamos el tamaño y el margen
+                style={"height": "50px", "marginLeft": "10px", "backgroundColor": "white",
+                     
+                    "borderRadius": "5px"  }  # Ajustamos el tamaño y el margen
             )
         ],
         color="primary",
@@ -264,10 +283,15 @@ def layout_home():
     año_sel = años[-1] if años else None
     rango = f"{df['fecha'].min().date()} → {df['fecha'].max().date()}"
     return html.Div([
-        html.H5(f"📅 Rango de fechas detectado: {rango}"),
+        html.H5(f"📅 Rango de fechas detectado en último Dataset publicado: {rango}"),
         html.P(
             "OCDS (Open Contracting Data Standard) es un estándar para publicar datos de contrataciones públicas "
             "en formato uniforme. Usarlo ayuda a comparar, analizar y auditar los procesos de compra pública.",
+            style={"fontStyle": "italic"}
+        ),
+        html.P(
+            "Información correspondiente a los procesos de compras llevados a cabo por las diferentes reparticiones del Gobierno de la Provincia de Mendoza. "
+            "Los datos corresponden a todos los bienes y servicios adquiridos por el Gobierno de la Provincia de Mendoza a través del sistema COMPRAR.",
             style={"fontStyle": "italic"}
         ),
         dcc.Dropdown(
@@ -278,7 +302,6 @@ def layout_home():
         ),
         html.Div(id="contenido-home"),
         html.Hr(),
-        html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
     ])
 
 # Ajustamos los tooltips para eliminar los decimales en los montos
@@ -428,7 +451,6 @@ def layout_procesos():
         ], className="mb-3"),
         html.Div(id="tabla-procesos"),
         html.Hr(),
-        html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
     ])
 
 @app.callback(
