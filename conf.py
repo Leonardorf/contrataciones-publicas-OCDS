@@ -37,6 +37,7 @@ exclude_patterns = [
 	'.venv',
 	'Thumbs.db',
 	'.DS_Store',
+	'evaluation_criteria.rst',
 ]
 
 language = 'es'
