@@ -1,11 +1,16 @@
-# Ignorar carpetas y archivos generados automáticamente
+## Artefactos de Sphinx
 _build/
-_static/
-_templates/
+
+## Python
 *.pyc
 __pycache__/
 *.log
 *.tmp
+.pytest_cache/
+.coverage
+coverage.xml
+dist/
+build/
 
 # Ignorar entornos virtuales
 .venv/
@@ -18,3 +23,4 @@ data/raw/
 data/processed/
 data/bases.pdf
 output/
+ouput/

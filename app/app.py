@@ -61,6 +61,23 @@ def serve_test_image():
 # FUNCIONES AUXILIARES
 # ------------------------------------------------------
 def cargar_ocds(ruta):
+    """Carga un JSON OCDS desde una URL o desde una ruta local.
+
+    Parámetros
+    ----------
+    ruta : str
+        Ruta absoluta/relativa del archivo JSON o URL HTTP(S).
+
+    Retorna
+    -------
+    dict
+        Objeto Python con el contenido JSON del release OCDS.
+
+    Lanza
+    -----
+    ValueError
+        Si la ruta no es válida ni URL ni archivo existente.
+    """
     if ruta.startswith("http"):
         resp = requests.get(ruta)
         resp.raise_for_status()
@@ -72,6 +89,22 @@ def cargar_ocds(ruta):
         raise ValueError(f"No se reconoce la ruta: {ruta}")
 
 def extraer_contratos(data):
+    """Transforma el JSON OCDS en un DataFrame tabular de contratos/adjudicaciones.
+
+    Recorre la lista de ``releases`` y normaliza campos relevantes para
+    análisis y visualización (fecha, tender_id, licitante, proveedor, monto,
+    tipo de contratación estimado, etc.).
+
+    Parámetros
+    ----------
+    data : dict
+        Estructura JSON con el/los releases en formato OCDS.
+
+    Retorna
+    -------
+    pandas.DataFrame
+        Tabla con registros por proveedor/adjudicación.
+    """
     registros = []
     for rel in data.get("releases", []):
         fecha = (
@@ -139,10 +172,27 @@ def extraer_contratos(data):
     return df
 
 def detectar_tipo(tender_id, titulo=None, contrato_desc=None, submission_details=None):
-    """
-    Detecta LPU / CDI u Otro a partir de:
-     - tender_id (busca '-XXX99' al final)
-     - o, si no existe, infiere desde título o submission_details o description
+    """Intenta clasificar el tipo de contratación.
+
+    La heurística busca primero un sufijo en ``tender_id`` (p. ej. ``-LPU99``),
+    y si no está disponible, infiere desde ``titulo``, ``submission_details`` o
+    ``contrato_desc`` buscando palabras clave.
+
+    Parámetros
+    ----------
+    tender_id : str | None
+        Identificador del proceso licitatorio.
+    titulo : str | None
+        Título del proceso (si existe).
+    contrato_desc : str | None
+        Descripción de contrato (fallback).
+    submission_details : str | None
+        Texto con detalles del método de presentación (si existe).
+
+    Retorna
+    -------
+    str
+        Uno de ``{"LPU", "CDI", "Otro"}``.
     """
     # 1) desde tender_id
     if tender_id and not pd.isna(tender_id):
@@ -161,11 +211,22 @@ def detectar_tipo(tender_id, titulo=None, contrato_desc=None, submission_details
     return "Otro"
 
 def format_mill_int(x):
-    """
-    Formatea números en millones para tablas:
-    - toma un valor numérico que representa 'millones' (por ejemplo 54137.6)
-    - redondea al entero: 54137
-    - devuelve string con '.' como separador de miles y sufijo 'M' -> '54.137M'
+    """Formatea números en millones para su uso en tablas.
+
+    - Recibe un valor numérico que representa millones (p. ej. ``54137.6``).
+    - Redondea al entero (``54137``).
+    - Devuelve un texto con separador de miles ``.`` y sufijo ``M``
+      (``"54.137M"`` en el ejemplo).
+
+    Parámetros
+    ----------
+    x : float | int | None
+        Valor numérico en millones.
+
+    Retorna
+    -------
+    str
+        Cadena formateada o ``"-"`` si el valor no es válido.
     """
     try:
         if pd.isna(x):
@@ -177,7 +238,22 @@ def format_mill_int(x):
         return "-"
 
 def format_mill_hover(x, decimals=3):
-    """Formato para hover en gráficos: '54.137M' pero con decimales (54.137.600 -> 54137.600 -> 54137.600 M)"""
+    """Formatea valores en millones para tooltips (hover) en gráficos.
+
+    Muestra el valor con ``decimals`` decimales y sufijo ``M``.
+
+    Parámetros
+    ----------
+    x : float | int | None
+        Valor en millones.
+    decimals : int
+        Cantidad de decimales a mostrar (por defecto 3).
+
+    Retorna
+    -------
+    str
+        Cadena formateada o ``"-"`` si el valor no es válido.
+    """
     if pd.isna(x):
         return "-"
     val = float(x)
@@ -279,6 +355,16 @@ app.layout = dbc.Container([
 # ------------------------------------------------------
 # Restauramos la funcionalidad completa de layout_home con tablas y gráficos
 def layout_home():
+    """Genera el layout de la página principal (Home).
+
+    Incluye un selector de año, tarjetas con totales y gráficos de evolución,
+    distribución por tipo de contratación y rankings de licitantes.
+
+    Retorna
+    -------
+    dash.html.Div
+        Contenedor con los componentes Dash del layout Home.
+    """
     años = sorted(df["año"].dropna().unique())
     año_sel = años[-1] if años else None
     rango = f"{df['fecha'].min().date()} → {df['fecha'].max().date()}"
@@ -286,7 +372,7 @@ def layout_home():
         html.H5(f"📅 Rango de fechas detectado en último Dataset publicado: {rango}"),
         html.P(
             "OCDS (Open Contracting Data Standard) es un estándar para publicar datos de contrataciones públicas "
-            pip install sphinx            .venv\\Scripts\\activate            "en formato uniforme. Usarlo ayuda a comparar, analizar y auditar los procesos de compra pública.",
+            "en formato uniforme. Usarlo ayuda a comparar, analizar y auditar los procesos de compra pública.",
             style={"fontStyle": "italic"}
         ),
         html.P(
@@ -307,6 +393,18 @@ def layout_home():
 # Ajustamos los tooltips para eliminar los decimales en los montos
 @app.callback(Output("contenido-home", "children"), Input("año-selector-home", "value"))
 def actualizar_home(año_sel):
+    """Callback que actualiza el contenido de Home cuando cambia el año.
+
+    Parámetros
+    ----------
+    año_sel : int
+        Año seleccionado en el ``Dropdown``.
+
+    Retorna
+    -------
+    dash.html.Div
+        Componentes con tabla de totales y gráficos correspondientes.
+    """
     if año_sel is None:
         return html.Div("No hay datos disponibles.")
     df_f = df[df["año"] == año_sel].copy()
@@ -384,6 +482,13 @@ def actualizar_home(año_sel):
 # Página INSUMOS
 # ------------------------------------------------------
 def layout_insumos():
+    """Genera el layout de la página de Insumos más contratados.
+
+    Retorna
+    -------
+    dash.html.Div
+        Contenedor con el selector de año y el espacio para resultados.
+    """
     años = sorted(df["año"].dropna().unique())
     año_sel = años[-1] if años else None
     return html.Div([
@@ -400,6 +505,18 @@ def layout_insumos():
 
 @app.callback(Output("contenido-insumos", "children"), Input("año-selector-insumos", "value"))
 def actualizar_insumos(año_sel):
+    """Callback que arma el Top de insumos y su gráfico para el año dado.
+
+    Parámetros
+    ----------
+    año_sel : int
+        Año seleccionado.
+
+    Retorna
+    -------
+    dash.html.Div
+        Tabla y gráfico de barras con los insumos más contratados.
+    """
     df_f = df[df["año"] == año_sel]
     items = []
     for _, row in df_f.iterrows():
@@ -436,6 +553,13 @@ def actualizar_insumos(año_sel):
 # Página PROCESOS FILTRADOS (filtros y tabla)
 # ------------------------------------------------------
 def layout_procesos():
+    """Genera el layout de la página de "Procesos Filtrados" con filtros.
+
+    Retorna
+    -------
+    dash.html.Div
+        Contenedor con filtros y la tabla de resultados.
+    """
     años = sorted(df["año"].dropna().unique())
     compradores = sorted([x for x in df["licitante"].dropna().unique()])
     proveedores = sorted([x for x in df["proveedor"].dropna().unique()])
@@ -461,6 +585,24 @@ def layout_procesos():
     Input("filtro-tipo", "value")
 )
 def filtrar_procesos(año, comprador, proveedor, tipo):
+    """Callback que filtra procesos por año, comprador, proveedor y tipo.
+
+    Parámetros
+    ----------
+    año : int
+        Año a filtrar.
+    comprador : str | None
+        Nombre del licitante (opcional).
+    proveedor : str | None
+        Nombre del proveedor (opcional).
+    tipo : str | None
+        Tipo de contratación, p. ej. ``"LPU"``, ``"CDI"`` (opcional).
+
+    Retorna
+    -------
+    dash.dash_table.DataTable | dash.html.Div
+        Tabla con resultados o mensaje si no hay coincidencias.
+    """
     df_f = df[df["año"] == año].copy()
     if comprador:
         df_f = df_f[df_f["licitante"] == comprador]
