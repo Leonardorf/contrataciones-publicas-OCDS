@@ -137,3 +137,62 @@ gunicorn app.app:server --bind 0.0.0.0:${PORT:-8050}
 ```
 
 La app escucha en 0.0.0.0 y lee HOST/PORT del entorno si están definidos.
+
+## Despliegues gratuitos / PaaS sugeridos
+
+### Opción A: Render (gratis tier)
+1. Crea cuenta en https://render.com/
+2. New + Web Service → conecta tu repositorio.
+3. Build Command: `pip install -r requirements.txt`
+4. Start Command: `gunicorn app.app:server --bind 0.0.0.0:$PORT`
+5. Environment → Python 3.11 (si permite elegir) o añade `runtime.txt`.
+6. Añade variable `OCDS_JSON_URL` si querés override del dataset.
+
+### Opción B: Railway
+1. Crea cuenta en https://railway.app/
+2. Nuevo proyecto desde repo GitHub.
+3. Variables: `PORT=8080` (Railway suele inyectar una), ajusta Start Command:
+  ```
+  gunicorn app.app:server --bind 0.0.0.0:$PORT
+  ```
+4. Si el puerto asignado cambia, Railway lo expone como variable (mantenlo con $PORT).
+
+### Opción C: Deta Space (micro)
+1. Empaqueta con `Procfile` (Deta detecta Python usando `main.py` normalmente; aquí usar contenedor si cambian políticas).
+2. Alternativa: usar Dockerfile (Beta) subiendo la imagen.
+
+### Opción D: Hugging Face Spaces (Docker)
+1. Crear un Space → Tipo: Docker.
+2. Sube `Dockerfile` y `requirements.txt` (ya presentes) y carpeta `app/`.
+3. Define variable `PORT=7860` (HF usa 7860 por defecto) y cambia CMD si deseas:
+  ```Dockerfile
+  CMD ["gunicorn", "app.app:server", "--bind", "0.0.0.0:7860", "--workers", "2", "--timeout", "120"]
+  ```
+4. Al construir, obtienes URL estable del Space.
+
+### Variables útiles
+| Nombre | Significado |
+|--------|-------------|
+| OCDS_JSON_URL | URL o ruta al JSON OCDS a cargar |
+| PORT | Puerto de escucha (aportado por el PaaS) |
+| HOST | Host binding (0.0.0.0 en producción) |
+
+### Health Check sencillo (opcional)
+Puedes añadir en `app/app.py` una ruta rápida:
+```python
+@app.server.route('/health')
+def health():
+   return {'status': 'ok'}, 200
+```
+Luego configura el health check del PaaS a `/health`.
+
+### Consejos de optimización
+- Evita cargar datasets enormes al iniciar: podrías pasar a lazy load.
+- Usa `workers=2` en gunicorn para mantener consumo bajo.
+- Agrega caché simple (por ejemplo functools.lru_cache) si repites transformaciones.
+
+### Contenedor local (prueba)
+```bash
+docker build -t ocds-mza .
+docker run -p 8050:8050 -e PORT=8050 ocds-mza
+```
