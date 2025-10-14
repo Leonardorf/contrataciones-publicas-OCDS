@@ -1,0 +1,18 @@
+# Ignorar carpetas y archivos generados automáticamente
+_build/
+_static/
+_templates/
+*.pyc
+__pycache__/
+*.log
+*.tmp
+
+# Ignorar entornos virtuales
+.venv/
+
+# Ignorar archivos específicos
+assets/marca_gov.png
+assets/OCDS-logo-grey.avif
+data/raw/
+data/processed/
+output/

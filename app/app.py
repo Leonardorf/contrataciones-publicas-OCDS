@@ -286,7 +286,7 @@ def layout_home():
         html.H5(f"📅 Rango de fechas detectado en último Dataset publicado: {rango}"),
         html.P(
             "OCDS (Open Contracting Data Standard) es un estándar para publicar datos de contrataciones públicas "
-            "en formato uniforme. Usarlo ayuda a comparar, analizar y auditar los procesos de compra pública.",
+            pip install sphinx            .venv\\Scripts\\activate            "en formato uniforme. Usarlo ayuda a comparar, analizar y auditar los procesos de compra pública.",
             style={"fontStyle": "italic"}
         ),
         html.P(
