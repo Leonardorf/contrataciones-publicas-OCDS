@@ -67,7 +67,6 @@ Tabla de Contenidos
    introduction
    usage
    methodology
-   evaluation_criteria
    api
 
 Librerías Utilizadas
@@ -98,4 +97,5 @@ Información Adicional
 Para más información sobre el estándar OCDS, visite: https://www.open-contracting.org/.
 
 Para detalles sobre el concurso, consulte: https://udesa.edu.ar/contar-con-datos.
+Para detalles sobre el sistema Comprar- Mendoza :https://comprar.mendoza.gov.ar/.
 

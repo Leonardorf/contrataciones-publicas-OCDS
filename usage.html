@@ -49,7 +49,6 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introducción</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Uso</a></li>
 <li class="toctree-l1"><a class="reference internal" href="methodology.html">Metodología</a></li>
-<li class="toctree-l1"><a class="reference internal" href="evaluation_criteria.html">Criterios de Evaluación</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Código fuente de la aplicación</a></li>
 </ul>
 
@@ -79,17 +78,29 @@
              
   <section id="uso">
 <h1>Uso<a class="headerlink" href="#uso" title="Link to this heading"></a></h1>
-<p>Para ejecutar la aplicación Dash:</p>
+<p>Para ejecutar la aplicación Dash en local, siga estos pasos: (Windows PowerShell)</p>
 <ol class="arabic simple">
 <li><p>Active su entorno virtual.</p></li>
-<li><p>Desde PowerShell, ejecute:</p>
-<ul class="simple">
-<li><p>Cambie al directorio <code class="docutils literal notranslate"><span class="pre">app</span></code></p></li>
-<li><p>Ejecute <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">app.py</span></code></p></li>
-</ul>
-</li>
 </ol>
+<p>2. Desde PowerShell, ejecute:
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>powershell
+py -3 -m venv .venv
+&amp; «..venvScriptsActivate.ps1»
+python -m pip install -r requirements.txt</p>
+<p># Dataset (opcional: por defecto usa una URL pública)
+$env:OCDS_JSON_URL = «<a class="reference external" href="https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json">https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json</a>»
+$env:PORT = «8050»</p>
+<p>python appapp.py
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
 <p>Vea la aplicación en el navegador en la URL que se indique en la consola.</p>
+<p>GitHub Codespaces</p>
+<p>Al abrir el repositorio en Codespaces, el contenedor instala dependencias automáticamente.
+Luego ejecuta:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">OCDS_JSON_URL=&quot;https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json&quot;</span>
+<span class="pre">export</span> <span class="pre">PORT=8050</span>
+<span class="pre">python</span> <span class="pre">app/app.py</span>
+<span class="pre">`</span></code></p>
 </section>
 
 
