@@ -9,5 +9,3 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: OCDS_JSON_URL
-        sync: false

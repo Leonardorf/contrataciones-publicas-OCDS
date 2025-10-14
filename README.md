@@ -190,6 +190,122 @@ Si prefieres el flujo manual (sin blueprint):
 ### Health Check
 La ruta `/health` ya está implementada y devuelve JSON con `status`, `rows` y `sphinx_build`. Configura tu PaaS para usarla como verificación de estado.
 
+## Gestión de Carga de Datos y Endpoints
+
+La aplicación implementa un mecanismo resiliente de carga del dataset OCDS con soporte para:
+
+- Carga inmediata por defecto (a menos que se active modo lazy).
+- Sanitización automática de la URL (elimina comillas y espacios accidentales).
+- Reintentos exponenciales (3 intentos) en caso de fallo temporal de red.
+- Recarga manual vía endpoint `/reload-data` o botón en la UI.
+- Evita cargar datos durante el build de documentación Sphinx (`SPHINX_BUILD=1`).
+
+### Variables de entorno relevantes
+| Variable | Uso | Valor por defecto | Notas |
+|----------|-----|-------------------|-------|
+| `OCDS_JSON_URL` | URL (o ruta local) al JSON OCDS a consumir | URL pública fija | Si está vacía o no definida se usa la URL por defecto. No pongas comillas alrededor. |
+| `LAZY_LOAD` | Si `1`, difiere la carga hasta que un usuario lo solicite | `0` | En modo lazy el primer acceso que necesite datos o el botón de recarga dispara la carga. |
+| `SPHINX_BUILD` | Si `1`, desactiva la carga real (solo docs) | `0` | No usar en producción. |
+
+### Endpoint `/health`
+Devuelve un JSON rápido, sin forzar (re)carga de datos:
+
+Ejemplo respuesta (con datos cargados):
+```json
+{
+  "status": "ok",
+  "rows": 12456,
+  "sphinx_build": false
+}
+```
+
+PowerShell:
+```powershell
+Invoke-RestMethod -Uri "https://TU-DOMINIO/health"
+```
+
+curl:
+```bash
+curl -s https://TU-DOMINIO/health | jq
+```
+
+Interpretación rápida:
+- `rows = 0` puede indicar: carga en curso, modo lazy, fallo previo o dataset realmente vacío.
+- `sphinx_build = true` significa que la app fue importada sólo para generar documentación (ignorar `rows`).
+
+### Endpoint `/reload-data`
+Fuerza un intento de recarga (omite cache si ya había datos). Útil tras corregir `OCDS_JSON_URL`.
+
+PowerShell:
+```powershell
+Invoke-RestMethod -Uri "https://TU-DOMINIO/reload-data"
+```
+
+curl:
+```bash
+curl -s https://TU-DOMINIO/reload-data | jq
+```
+
+Respuesta esperada (éxito):
+```json
+{ "status": "ok", "rows": 12456 }
+```
+
+Si falla:
+```json
+{ "status": "error", "error": "Detalle del problema" }
+```
+
+### Botón "Forzar recarga de datos" en la interfaz
+Cuando el DataFrame está vacío (por ejemplo al inicio con `LAZY_LOAD=1` o tras un fallo), la página Home muestra:
+
+1. Mensaje: *"No hay datos disponibles (dataset vacío o carga diferida)."*
+2. Botón: *Forzar recarga de datos*.
+3. Un pequeño poller (`dcc.Interval`) que intenta detectar si tras la recarga ya hay filas.
+
+Al completarse la carga, se informa la cantidad de filas y podés cambiar el año o refrescar el navegador para ver los gráficos.
+
+### Flujo recomendado de verificación (troubleshooting)
+1. Consultar `/health`.
+   - Si `rows > 0`: OK.
+2. Si `rows = 0`, invocar `/reload-data` o usar el botón.
+3. Volver a consultar `/health`.
+4. Si sigue en 0:
+   - Verificar que la URL en `OCDS_JSON_URL` es accesible directamente (abrir en navegador / curl).
+   - Quitar comillas envolventes en la variable (ej: usar `https://...json` y NO `"https://...json"`).
+   - Revisar logs del servicio (Render / container) buscando líneas con `Fallo definitivo`.
+5. (Opcional) Activar temporalmente `LAZY_LOAD=1` para que el arranque sea más rápido y luego forzar la carga manual.
+
+### Ejemplo completo (PowerShell) cambiando la URL de datos
+```powershell
+$env:OCDS_JSON_URL = "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
+python app\app.py
+
+# En otra ventana, probar health y recarga
+Invoke-RestMethod -Uri "http://localhost:8050/health"
+Invoke-RestMethod -Uri "http://localhost:8050/reload-data"
+```
+
+### Script de smoke test rápido (opcional)
+Guarda como `scripts/smoke.ps1` para verificar despliegue:
+```powershell
+param(
+  [string]$Base = "http://localhost:8050"
+)
+$h = Invoke-RestMethod -Uri "$Base/health"
+if($h.status -ne 'ok') { Write-Error "Health no OK"; exit 1 }
+if($h.rows -eq 0) {
+  Write-Host "Rows=0 → forzando recarga" -ForegroundColor Yellow
+  $r = Invoke-RestMethod -Uri "$Base/reload-data"
+  Start-Sleep -Seconds 3
+  $h2 = Invoke-RestMethod -Uri "$Base/health"
+  if($h2.rows -eq 0) { Write-Error "Sigue sin datos"; exit 2 }
+}
+Write-Host "Smoke test OK" -ForegroundColor Green
+```
+
+Con esto disponés de un camino claro para validar y recuperar la carga de datos tanto local como en producción.
+
 ### Consejos de optimización
 - Evita cargar datasets enormes al iniciar: podrías pasar a lazy load.
 - Usa `workers=2` en gunicorn para mantener consumo bajo.
