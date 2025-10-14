@@ -13,6 +13,7 @@ __pycache__/
 # Ignorar archivos específicos
 assets/marca_gov.png
 assets/OCDS-logo-grey.avif
+assets/texto.txt
 data/raw/
 data/processed/
 data/bases.pdf
