@@ -1,34 +1,19 @@
 .. Proyecto Contar con Datos - Documentación principal
 
-=========================================
 Documentación del Proyecto Contar con Datos
-=========================================
+============================================================
 
 Introducción
 ============
 Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas en la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
 
-El propósito de esta documentación es servir como guía para el comité evaluador y el jurado, destacando los aspectos técnicos, metodológicos y estéticos del proyecto.
-
-Criterios de Evaluación
-=======================
-Los trabajos presentados serán evaluados teniendo en cuenta los siguientes criterios:
-
-- **Precisión de los datos y rigor metodológico.**
-- **Impacto y aplicabilidad.**
-- **Entendimiento y síntesis.**
-- **Originalidad y creatividad.**
-- **Impacto estético y grafismo.**
-
-Criterios de Evaluación Detallados
-=================================
 
 Precisión de los datos y rigor metodológico
 -------------------------------------------
 El proyecto utiliza el estándar OCDS para garantizar que los datos sean precisos y estén estructurados de manera uniforme. Se emplean las siguientes técnicas para asegurar el rigor metodológico:
 
-- **Validación de datos**: Uso de `pandas` para detectar y manejar valores nulos o inconsistentes.
-- **Transformación de datos**: Limpieza y normalización de los datos para adaptarlos al formato OCDS.
+- **Validación de datos**: Uso de `pandas` y demas librerias de ciencia de datos para detectar y manejar valores nulos o inconsistentes en el dataset publicado por el organismo oficial.
+- **Transformación de datos**: Limpieza y normalización de los datos teniendo en cuenta el estandar OCDS.
 - **Fuentes confiables**: Los datos provienen de sistemas oficiales como el sistema COMPRAR del Gobierno de Mendoza.
 
 Impacto y aplicabilidad
@@ -37,7 +22,7 @@ El proyecto tiene un impacto significativo en diversas áreas:
 
 - **Gobierno**: Mejora la transparencia y facilita la rendición de cuentas.
 - **Ciudadanos**: Permite a los ciudadanos entender cómo se utilizan los recursos públicos.
-- **Investigadores**: Proporciona un conjunto de datos estructurados para análisis avanzados.
+- **Investigadores/ ONGs**: Proporciona un conjunto de datos estructurados para análisis avanzados. Promover proyectos sobre participacion ciudadana y vigilancia de la gestión pública. 
 
 Casos de uso:
 - Identificación de patrones de gasto público.
@@ -58,7 +43,7 @@ El proyecto se distingue por:
 
 - **Uso innovador de tecnologías**: Integración de Dash, Plotly y el estándar OCDS.
 - **Enfoque único**: Combinación de análisis de datos con visualizaciones interactivas.
-- **Adaptabilidad**: La plataforma puede ser utilizada por diferentes audiencias con necesidades específicas.
+- **Adaptabilidad**: La plataforma puede ser utilizada por diferentes audiencias con necesidades específicas, como el uso de otros datasets bajo el estandar OCDS.
 
 Impacto estético y grafismo
 ---------------------------
