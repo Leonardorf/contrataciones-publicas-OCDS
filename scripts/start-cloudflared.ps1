@@ -5,7 +5,7 @@
 
 param(
     [string]$Port = "8050",
-    [string]$Host = "127.0.0.1",
+    [string]$BindHost = "127.0.0.1",
     [string]$OCDSUrl = "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
 )
 
@@ -20,7 +20,7 @@ if (Test-Path .\.venv\Scripts\Activate.ps1) {
 
 Write-Host "[2/3] Exportando variables y ejecutando la app..."
 $env:OCDS_JSON_URL = $OCDSUrl
-$env:HOST = $Host
+$env:HOST = $BindHost
 $env:PORT = $Port
 
 # Arrancar la app en segundo plano
@@ -29,4 +29,4 @@ Start-Sleep -Seconds 3
 
 Write-Host "[3/3] Abriendo túnel con Cloudflare (cloudflared)..."
 # El túnel imprime una URL pública https://xxxx.trycloudflare.com
-cloudflared tunnel --url "http://${Host}:${Port}"
+cloudflared tunnel --url "http://${BindHost}:${Port}"
