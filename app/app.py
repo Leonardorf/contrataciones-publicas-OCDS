@@ -4,7 +4,7 @@ from dash import dcc, html, Input, Output, dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
-import json, re, os, requests
+import json, re, os, requests, threading
 import flask
 
 # Habilitar logs detallados para Flask
@@ -287,41 +287,76 @@ def capitalize_title(title):
 # ------------------------------------------------------
 # Si se está construyendo la documentación (SPHINX_BUILD=1), evitamos cargar datos reales
 SPHINX_BUILD = os.getenv("SPHINX_BUILD") == "1"
+LAZY_LOAD = os.getenv("LAZY_LOAD") == "1"  # Si está activo difiere la carga real hasta que se invoque manualmente
 
-if not SPHINX_BUILD:
-    # Fuente del dataset OCDS (URL o ruta local). Puede configurarse por variable de entorno
-    # Ejemplo de URL oficial: https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json
-    URL_JSON = os.getenv(
-        "OCDS_JSON_URL",
-        "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json",
-    )
-    data = cargar_ocds(URL_JSON)
-    df = extraer_contratos(data)
+# Variables globales de dataset
+URL_JSON = os.getenv(
+    "OCDS_JSON_URL",
+    "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json",
+)
+data = {"releases": []}
+df = pd.DataFrame({
+    "fecha": pd.to_datetime(pd.Series([], dtype="datetime64[ns]")),
+    "año": pd.Series([], dtype="Int64"),
+    "monto": pd.Series([], dtype="float"),
+    "monto_millones": pd.Series([], dtype="float"),
+    "tipo_contratacion": pd.Series([], dtype="string"),
+    "licitante": pd.Series([], dtype="string"),
+    "tender_id": pd.Series([], dtype="string"),
+    "titulo": pd.Series([], dtype="string"),
+    "proveedor": pd.Series([], dtype="string"),
+})
+_DATA_LOADED = False
+_DATA_LOCK = threading.Lock()
+_DATA_ERROR = None
 
-    # Añadimos tipo (intento por tender_id, con fallback a título/descr)
-    df["tipo_contratacion"] = df.apply(
-        lambda r: detectar_tipo(r.get("tender_id"), r.get("titulo"), r.get("contrato_desc"), r.get("submission_details")),
-        axis=1
-    )
+def _cargar_datos_internamente():
+    global data, df, _DATA_LOADED, _DATA_ERROR
+    logging.info("Iniciando carga de datos OCDS desde %s", URL_JSON)
+    raw = cargar_ocds(URL_JSON)
+    df_local = extraer_contratos(raw)
+    if not df_local.empty:
+        df_local["tipo_contratacion"] = df_local.apply(
+            lambda r: detectar_tipo(r.get("tender_id"), r.get("titulo"), r.get("contrato_desc"), r.get("submission_details")),
+            axis=1
+        )
+        df_local["monto"] = pd.to_numeric(df_local["monto"], errors="coerce").fillna(0.0)
+        df_local["monto_millones"] = df_local["monto"] / 1_000_000.0
+    data = raw
+    df = df_local
+    _DATA_LOADED = True
+    _DATA_ERROR = None
+    logging.info("Carga de datos completa. Filas=%d", len(df))
 
-    # convertimos monto a float y creamos columna en millones (numérica)
-    df["monto"] = pd.to_numeric(df["monto"], errors="coerce").fillna(0.0)
-    df["monto_millones"] = df["monto"] / 1_000_000.0
-else:
-    # Placeholders mínimos para permitir la importación durante el build de Sphinx
-    URL_JSON = ""
-    data = {"releases": []}
-    df = pd.DataFrame({
-        "fecha": pd.to_datetime(pd.Series([], dtype="datetime64[ns]")),
-        "año": pd.Series([], dtype="Int64"),
-        "monto": pd.Series([], dtype="float"),
-        "monto_millones": pd.Series([], dtype="float"),
-        "tipo_contratacion": pd.Series([], dtype="string"),
-        "licitante": pd.Series([], dtype="string"),
-        "tender_id": pd.Series([], dtype="string"),
-        "titulo": pd.Series([], dtype="string"),
-        "proveedor": pd.Series([], dtype="string"),
-    })
+def ensure_data_loaded(force: bool = False):
+    """Garantiza que los datos estén cargados (lazy si LAZY_LOAD=1)."""
+    global _DATA_LOADED, _DATA_ERROR
+    if SPHINX_BUILD:
+        return
+    if _DATA_LOADED and not force:
+        return
+    with _DATA_LOCK:
+        if _DATA_LOADED and not force:
+            return
+        try:
+            _cargar_datos_internamente()
+        except Exception as e:
+            _DATA_ERROR = str(e)
+            logging.exception("Fallo al cargar datos OCDS (se usará DataFrame vacío)")
+
+# Carga inmediata salvo que estemos en build de docs o modo lazy
+if not SPHINX_BUILD and not LAZY_LOAD:
+    ensure_data_loaded()
+
+# Endpoint opcional para forzar recarga manual (útil en PaaS si falló al inicio)
+@app.server.route('/reload-data')
+def reload_data_route():
+    if SPHINX_BUILD:
+        return flask.jsonify(message="Modo SPHINX_BUILD: no se carga dataset"), 200
+    ensure_data_loaded(force=True)
+    if _DATA_ERROR:
+        return flask.jsonify(status="error", error=_DATA_ERROR), 500
+    return flask.jsonify(status="ok", rows=len(df)), 200
 
 # ------------------------------------------------------
 # ENCABEZADO CON ESCUDO
