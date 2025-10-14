@@ -70,3 +70,34 @@ El estándar OCDS (Open Contracting Data Standard) es un marco global para la pu
 ## Información Adicional
 - Para más información sobre el estándar OCDS, visite: [Open Contracting Partnership](https://www.open-contracting.org/).
 - Para detalles sobre el sistema Comprar- Mendoza : [Comprar- Mendoza](https://comprar.mendoza.gov.ar/).
+
+## Cómo ejecutar la app (rápido)
+
+### Local (Windows PowerShell)
+```powershell
+py -3 -m venv .venv
+& ".\.venv\Scripts\Activate.ps1"
+python -m pip install -r requirements.txt
+
+# Dataset (opcional: por defecto usa una URL pública)
+$env:OCDS_JSON_URL = "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
+$env:PORT = "8050"
+
+python app\app.py
+```
+
+### GitHub Codespaces
+Al abrir el repositorio en Codespaces, el contenedor instala dependencias automáticamente.
+Luego ejecuta:
+```bash
+export OCDS_JSON_URL="https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
+export PORT=8050
+python app/app.py
+```
+
+### Producción (Gunicorn)
+```bash
+gunicorn app.app:server --bind 0.0.0.0:${PORT:-8050}
+```
+
+La app escucha en 0.0.0.0 y lee HOST/PORT del entorno si están definidos.
