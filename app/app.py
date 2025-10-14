@@ -269,24 +269,43 @@ def capitalize_title(title):
 # ------------------------------------------------------
 # CARGA DE DATOS y normalizaciones
 # ------------------------------------------------------
-# Fuente del dataset OCDS (URL o ruta local). Puede configurarse por variable de entorno
-# Ejemplo de URL oficial: https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json
-URL_JSON = os.getenv(
-    "OCDS_JSON_URL",
-    "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json",
-)
-data = cargar_ocds(URL_JSON)
-df = extraer_contratos(data)
+# Si se está construyendo la documentación (SPHINX_BUILD=1), evitamos cargar datos reales
+SPHINX_BUILD = os.getenv("SPHINX_BUILD") == "1"
 
-# Añadimos tipo (intento por tender_id, con fallback a título/descr)
-df["tipo_contratacion"] = df.apply(
-    lambda r: detectar_tipo(r.get("tender_id"), r.get("titulo"), r.get("contrato_desc"), r.get("submission_details")),
-    axis=1
-)
+if not SPHINX_BUILD:
+    # Fuente del dataset OCDS (URL o ruta local). Puede configurarse por variable de entorno
+    # Ejemplo de URL oficial: https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json
+    URL_JSON = os.getenv(
+        "OCDS_JSON_URL",
+        "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json",
+    )
+    data = cargar_ocds(URL_JSON)
+    df = extraer_contratos(data)
 
-# convertimos monto a float y creamos columna en millones (numérica)
-df["monto"] = pd.to_numeric(df["monto"], errors="coerce").fillna(0.0)
-df["monto_millones"] = df["monto"] / 1_000_000.0
+    # Añadimos tipo (intento por tender_id, con fallback a título/descr)
+    df["tipo_contratacion"] = df.apply(
+        lambda r: detectar_tipo(r.get("tender_id"), r.get("titulo"), r.get("contrato_desc"), r.get("submission_details")),
+        axis=1
+    )
+
+    # convertimos monto a float y creamos columna en millones (numérica)
+    df["monto"] = pd.to_numeric(df["monto"], errors="coerce").fillna(0.0)
+    df["monto_millones"] = df["monto"] / 1_000_000.0
+else:
+    # Placeholders mínimos para permitir la importación durante el build de Sphinx
+    URL_JSON = ""
+    data = {"releases": []}
+    df = pd.DataFrame({
+        "fecha": pd.to_datetime(pd.Series([], dtype="datetime64[ns]")),
+        "año": pd.Series([], dtype="Int64"),
+        "monto": pd.Series([], dtype="float"),
+        "monto_millones": pd.Series([], dtype="float"),
+        "tipo_contratacion": pd.Series([], dtype="string"),
+        "licitante": pd.Series([], dtype="string"),
+        "tender_id": pd.Series([], dtype="string"),
+        "titulo": pd.Series([], dtype="string"),
+        "proveedor": pd.Series([], dtype="string"),
+    })
 
 # ------------------------------------------------------
 # ENCABEZADO CON ESCUDO

@@ -3,6 +3,11 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import os
+
+# Señalizar a los módulos que el build es de documentación
+os.environ["SPHINX_BUILD"] = "1"
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
@@ -16,8 +21,8 @@ author = 'Ing. Leonardo Villegas'
 extensions = [
 	"sphinx.ext.napoleon",      # Docstrings estilo Google/NumPy
 	"sphinx.ext.viewcode",      # Enlaces al código fuente
-	"sphinx.ext.autosummary",   # Resúmenes automáticos (si se usan en el futuro)
-	# "sphinx.ext.autodoc",     # Evitamos por ahora para no importar el módulo Dash durante el build
+	"sphinx.ext.autosummary",   # Resúmenes automáticos
+	"sphinx.ext.autodoc",       # Documentación automática de módulos
 ]
 
 # Generar autosummary automáticamente (si se emplea)
@@ -53,6 +58,24 @@ html_theme_options = {
 	"navigation_depth": 3,
 	"style_external_links": True,
 }
+
+# Logo y favicon (coloca los archivos en _static/)
+html_logo = '_static/logo.png'
+html_favicon = '_static/favicon.ico'
+
+# Opciones para autodoc (Opción 1: mocks durante el build)
+autodoc_default_options = {
+	'members': True,
+	'undoc-members': False,
+	'inherited-members': False,
+}
+autodoc_mock_imports = [
+	'dash',
+	'dash_bootstrap_components',
+	'plotly',
+	'pandas',
+	'requests',
+]
 
 # Agregar CSS personalizado para ocultar símbolos de parágrafo y pequeños ajustes
 def setup(app):
