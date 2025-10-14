@@ -37,32 +37,32 @@ En este proyecto, el uso del estándar OCDS asegura que los datos sean accesible
 - **Ciudadanos**: Permite a los ciudadanos entender cómo se utilizan los recursos públicos, promover los proyectos sobre presupuesto participativo.
 - **Investigadores /ONGs**: Proporciona un conjunto de datos estructurados para análisis avanzados.
 
-- Casos de uso:
+## Casos de uso:
   - Identificación de patrones de gasto público.
   - Evaluación de la eficiencia en las contrataciones.
   - Comparación de datos entre diferentes períodos.
  
 
-La plataforma está diseñada para simplificar datos complejos mediante:
+## La plataforma está diseñada para simplificar datos complejos mediante:
 
 - **Gráficos interactivos**: Uso de `Plotly` para explorar los datos de manera visual e intuitiva.
 - **Interfaz amigable**: Desarrollo con Dash y Bootstrap para garantizar una experiencia de usuario fluida.
 - **Síntesis de información**: Resúmenes claros y gráficos que destacan los puntos clave.
 
 
-El proyecto se distingue por:
+## El proyecto se distingue por:
 
 - **Uso innovador de tecnologías**: Integración de Dash, Plotly y el estándar OCDS.
 - **Enfoque único**: Combinación de análisis de datos con visualizaciones interactivas.
 - **Adaptabilidad**: La plataforma puede ser utilizada por diferentes audiencias con necesidades específicas.
 
 
-El diseño visual del proyecto se centra en:
+## El diseño visual del proyecto se centra en:
 
 - **Estética moderna**: Uso de Dash y Bootstrap para una interfaz atractiva y responsiva.
 - **Gráficos de alta calidad**: Generación de visualizaciones claras y profesionales con `Plotly`.
 
-Ejemplo de gráficos:
+## Ejemplo de gráficos:
 - Gráficos de barras para comparar montos entre diferentes licitantes.
 - Gráficos de líneas para mostrar la evolución mensual de los gastos.
 - Diagramas circulares para representar la distribución de tipos de contratación.
