@@ -140,13 +140,23 @@ La app escucha en 0.0.0.0 y lee HOST/PORT del entorno si están definidos.
 
 ## Despliegues gratuitos / PaaS sugeridos
 
-### Opción A: Render (gratis tier)
+### Opción A: Render (free tier) con `render.yaml`
+Ya se incluye un archivo `render.yaml` que permite desplegar con "Blueprint Deploy" (Infrastructure as Code).
+
+Pasos:
 1. Crea cuenta en https://render.com/
-2. New + Web Service → conecta tu repositorio.
-3. Build Command: `pip install -r requirements.txt`
-4. Start Command: `gunicorn app.app:server --bind 0.0.0.0:$PORT`
-5. Environment → Python 3.11 (si permite elegir) o añade `runtime.txt`.
-6. Añade variable `OCDS_JSON_URL` si querés override del dataset.
+2. En el dashboard: New + Blueprint → pega la URL del repo (`https://github.com/Leonardorf/contrataciones-publicas-OCDS`).
+3. Revisa que el servicio aparezca con nombre `ocds-mendoza-dashboard`.
+4. Ajusta (si quieres) la variable de entorno `OCDS_JSON_URL` (está marcada como `sync: false` para que la definas desde la UI si deseas cambiar la URL por defecto).
+5. Lanza el deploy. Render instalará dependencias y ejecutará Gunicorn con el comando definido.
+6. El health check usará automáticamente `/health`.
+
+Si prefieres el flujo manual (sin blueprint):
+1. New + Web Service → conecta tu repositorio.
+2. Build Command: `pip install -r requirements.txt`
+3. Start Command: `gunicorn app.app:server --bind 0.0.0.0:$PORT --workers=2 --timeout=120`
+4. Añade variable `OCDS_JSON_URL` si querés override del dataset.
+5. (Opcional) Configura Health Check Path = `/health`.
 
 ### Opción B: Railway
 1. Crea cuenta en https://railway.app/
@@ -177,14 +187,8 @@ La app escucha en 0.0.0.0 y lee HOST/PORT del entorno si están definidos.
 | PORT | Puerto de escucha (aportado por el PaaS) |
 | HOST | Host binding (0.0.0.0 en producción) |
 
-### Health Check sencillo (opcional)
-Puedes añadir en `app/app.py` una ruta rápida:
-```python
-@app.server.route('/health')
-def health():
-   return {'status': 'ok'}, 200
-```
-Luego configura el health check del PaaS a `/health`.
+### Health Check
+La ruta `/health` ya está implementada y devuelve JSON con `status`, `rows` y `sphinx_build`. Configura tu PaaS para usarla como verificación de estado.
 
 ### Consejos de optimización
 - Evita cargar datasets enormes al iniciar: podrías pasar a lazy load.

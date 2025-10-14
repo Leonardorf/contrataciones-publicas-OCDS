@@ -57,6 +57,22 @@ def serve_test_image():
         logging.error(f"Error al servir 'marca_gov.png': {e}")
         return f"Error al servir 'marca_gov.png': {e}", 500
 
+# Endpoint de health check ligero para PaaS / monitoreo
+@app.server.route('/health')
+def health():
+    """Devuelve un estado simple de salud del servicio.
+
+    Retorna un JSON con:
+    - status: "ok" si el servicio responde.
+    - rows: cantidad de filas cargadas en el DataFrame principal (0 durante build de docs o si no hay datos).
+    - sphinx_build: flag indicando si se está ejecutando en modo build de documentación.
+    """
+    try:
+        return flask.jsonify(status="ok", rows=int(len(df)), sphinx_build=SPHINX_BUILD), 200
+    except Exception as e:
+        logging.exception("Fallo en /health")
+        return flask.jsonify(status="error", error=str(e)), 500
+
 # ------------------------------------------------------
 # FUNCIONES AUXILIARES
 # ------------------------------------------------------
