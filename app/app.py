@@ -510,8 +510,14 @@ def actualizar_home(año_sel):
 
     # --- Totales por tipo (numérico) y versión para mostrar formateada ---
     totales = df_f.groupby("tipo_contratacion", as_index=False)["monto_millones"].sum()
+    # Mapear códigos a etiquetas descriptivas
+    mapping_tipos = {
+        "CDI": "Contratación Directa (CDI)",
+        "LPU": "Licitación Pública (LPU)"
+    }
+    totales["tipo_contratacion_ext"] = totales["tipo_contratacion"].map(mapping_tipos).fillna(totales["tipo_contratacion"])  # fallback a valor original
     totales["Monto (Millones)"] = totales["monto_millones"].apply(format_mill_int)
-    totales_display = totales[["tipo_contratacion", "Monto (Millones)"]].rename(columns={"tipo_contratacion": "Tipo Contratación"})
+    totales_display = totales[["tipo_contratacion_ext", "Monto (Millones)"]].rename(columns={"tipo_contratacion_ext": "Tipo Contratación"})
 
     tabla_totales = dash_table.DataTable(
         id="tabla-totales",
@@ -533,7 +539,8 @@ def actualizar_home(año_sel):
     # --- Monto por tipo de contratación (gráfico) ---
     dist_tipo = df_f.groupby("tipo_contratacion", as_index=False)["monto_millones"].sum()
     dist_tipo = dist_tipo[dist_tipo["monto_millones"] > 0]
-    fig_pie = px.pie(dist_tipo, values="monto_millones", names="tipo_contratacion", title=capitalize_title(f"Monto por tipo de contratación ({año_sel})"))
+    dist_tipo["tipo_contratacion_ext"] = dist_tipo["tipo_contratacion"].map(mapping_tipos).fillna(dist_tipo["tipo_contratacion"])
+    fig_pie = px.pie(dist_tipo, values="monto_millones", names="tipo_contratacion_ext", title=capitalize_title(f"Monto por tipo de contratación ({año_sel})"))
     fig_pie.update_traces(hovertemplate="%{label}: %{value:.0f}M")
 
     # --- Top 10 licitantes (año) ---
