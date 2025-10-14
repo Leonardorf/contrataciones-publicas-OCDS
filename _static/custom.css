@@ -1,1 +1,18 @@
-/* This file intentionally left blank. */
+/* Ocultar símbolos de parágrafo ¶ en títulos y anclas */
+.headerlink { display: none !important; }
+
+a, a:visited { color: #0366d6; }
+
+/* Ajustes de tipografía */
+body { font-size: 16px; line-height: 1.6; }
+.rst-content h1, .rst-content h2, .rst-content h3 { font-weight: 600; }
+
+/* Claridad en tablas */
+.wy-table-responsive table.docutils { width: 100%; }
+.wy-table-responsive { overflow: visible !important; }
+
+/* Mejor contraste de navegación lateral */
+.wy-nav-side { background: #1f2430; }
+.wy-side-nav-search { background: #1f2430; }
+.wy-menu-vertical a { color: #e6e6e6; }
+.wy-menu-vertical a:hover { background: #2b3245; }
