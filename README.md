@@ -16,22 +16,21 @@ En este proyecto se han utilizado diversas librerías de Python que son fundamen
 Estas herramientas son esenciales en la ciencia de datos, ya que permiten transformar datos en información útil y comprensible para la toma de decisiones.
 
 ## Estandar OCDS
-El estándar OCDS (Open Contracting Data Standard) es un marco global para la publicación de datos de contrataciones públicas. Su importancia radica en:
+El estándar OCDS (Open Contracting Data Standard) es un marco global para la publicación de datos de contrataciones públicas. El uso del estándar OCDS asegura que los datos sean accesibles, comprensibles y reutilizables por diferentes audiencias. Su importancia radica en:
 
 - **Transparencia**: Facilita el acceso a información clara y estructurada sobre los procesos de contratación pública.
 - **Comparabilidad**: Permite comparar datos entre diferentes jurisdicciones y períodos de tiempo.
 - **Análisis**: Proporciona un formato uniforme que facilita el análisis y la auditoría de los datos.
 - **Impacto social**: Promueve la rendición de cuentas y la lucha contra la corrupción en los procesos de contratación pública.
 
-En este proyecto, el uso del estándar OCDS asegura que los datos sean accesibles, comprensibles y reutilizables por diferentes audiencias.
 
-- Se emplean las siguientes técnicas para asegurar el rigor metodológico:
+## Se emplean las siguientes técnicas para asegurar el rigor metodológico:
 
 - **Validación de datos**: Uso de `pandas` para detectar y manejar valores nulos o inconsistentes.
 - **Transformación de datos**: Limpieza y normalización de los datos para adaptarlos al formato OCDS.
 - **Fuentes confiables**: Los datos provienen de sistemas oficiales como el sistema COMPRAR del Gobierno de Mendoza.
 
-- El proyecto tiene un impacto significativo en diversas áreas:
+## El proyecto tiene un impacto significativo en diversas áreas:
 
 - **Gobierno**: Mejora la transparencia y facilita la rendición de cuentas.
 - **Ciudadanos**: Permite a los ciudadanos entender cómo se utilizan los recursos públicos, promover los proyectos sobre presupuesto participativo.
