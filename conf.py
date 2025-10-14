@@ -31,12 +31,28 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = [
+	'_build',
+	'_site',
+	'.venv',
+	'Thumbs.db',
+	'.DS_Store',
+]
 
 language = 'es'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_theme_options = {
+	"collapse_navigation": False,
+	"sticky_navigation": True,
+	"navigation_depth": 3,
+	"style_external_links": True,
+}
+
+# Agregar CSS personalizado para ocultar símbolos de parágrafo y pequeños ajustes
+def setup(app):
+	app.add_css_file('custom.css')
