@@ -290,10 +290,12 @@ SPHINX_BUILD = os.getenv("SPHINX_BUILD") == "1"
 LAZY_LOAD = os.getenv("LAZY_LOAD") == "1"  # Si está activo difiere la carga real hasta que se invoque manualmente
 
 # Variables globales de dataset
-URL_JSON = os.getenv(
-    "OCDS_JSON_URL",
-    "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json",
-)
+_DEFAULT_OCDS_URL = "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
+_RAW_ENV_URL = os.getenv("OCDS_JSON_URL")
+if _RAW_ENV_URL is None or _RAW_ENV_URL.strip() == "":
+    URL_JSON = _DEFAULT_OCDS_URL
+else:
+    URL_JSON = _RAW_ENV_URL.strip()
 data = {"releases": []}
 df = pd.DataFrame({
     "fecha": pd.to_datetime(pd.Series([], dtype="datetime64[ns]")),
@@ -310,10 +312,22 @@ _DATA_LOADED = False
 _DATA_LOCK = threading.Lock()
 _DATA_ERROR = None
 
-def _cargar_datos_internamente():
+def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
     global data, df, _DATA_LOADED, _DATA_ERROR
     logging.info("Iniciando carga de datos OCDS desde %s", URL_JSON)
-    raw = cargar_ocds(URL_JSON)
+    last_err = None
+    for intento in range(1, max_retries + 1):
+        try:
+            raw = cargar_ocds(URL_JSON)
+            break
+        except Exception as e:
+            last_err = e
+            wait = base_delay * intento
+            logging.warning("Intento %d/%d fallo al descargar dataset (%s). Reintentando en %.1fs", intento, max_retries, e, wait)
+            if intento == max_retries:
+                logging.error("Fallo definitivo tras %d intentos: %s", max_retries, e)
+                raise
+            import time as _t; _t.sleep(wait)
     df_local = extraer_contratos(raw)
     if not df_local.empty:
         df_local["tipo_contratacion"] = df_local.apply(
