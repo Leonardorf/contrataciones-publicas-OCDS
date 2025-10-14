@@ -11,7 +11,6 @@ services:
       - key: PYTHON_VERSION
         value: "3.11.9"
       - key: OCDS_JSON_URL
-        value: ""   # Déjalo vacío para que use la URL por defecto; puedes sobreescribirlo en el panel
-        sync: false
+        sync: false   # Se definirá manualmente si se necesita; el código usa su valor por defecto cuando está vacío
     healthCheckPath: /health
     # healthCheckTimeout: 10  # opcional
