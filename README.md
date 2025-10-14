@@ -88,6 +88,40 @@ $env:PORT = "8050"
 python app\app.py
 ```
 
+## Demo pública temporal (Cloudflare Quick Tunnel)
+
+Si querés compartir la app con alguien sin que tenga que instalar nada, podés abrir un túnel público temporal.
+
+Opción 1: usar el script incluido (recomendado en Windows PowerShell)
+
+1. Instalar cloudflared (una vez):
+  - Con winget: `winget install Cloudflare.cloudflared`
+  - Con Chocolatey: `choco install cloudflared`
+2. Desde la carpeta del repo, ejecutá:
+  - `scripts/start-cloudflared.ps1`
+
+El script:
+- Activa el venv si existe.
+- Exporta `OCDS_JSON_URL`, `HOST` y `PORT`.
+- Arranca la app en segundo plano.
+- Abre un túnel y muestra en consola una URL pública del estilo `https://xxxx.trycloudflare.com` para compartir.
+
+Parámetros opcionales del script:
+
+```
+scripts/start-cloudflared.ps1 -Port 8050 -Host 127.0.0.1 -OCDSUrl "https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
+```
+
+Opción 2: hacerlo manualmente
+
+1. Lanzá la app local
+2. En otra terminal, ejecutá:
+
+```
+cloudflared tunnel --url http://localhost:8050
+```
+
+Mantené la consola abierta; si la cerrás, el enlace deja de funcionar. Cada vez que inicies el túnel obtendrás un enlace distinto (efímero).
 ### GitHub Codespaces
 Al abrir el repositorio en Codespaces, el contenedor instala dependencias automáticamente.
 Luego ejecuta:
