@@ -862,7 +862,7 @@ def layout_acerca():
         html.Ul([
             html.Li([
                 html.Strong("Autor: "),
-                html.A("Ing. Leonardo Villegas", href="https://github.com/Leonardorf", target="_blank"),
+                html.A("Ing. Leonardo Raúl Federico Villegas", href="https://github.com/Leonardorf", target="_blank"),
                 html.Span(" · "),
                 html.A("Perfil en GitHub", href="https://github.com/Leonardorf", target="_blank")
             ]),
