@@ -11,7 +11,7 @@ os.environ["SPHINX_BUILD"] = "1"
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Contrataciones Públicas de Mendoza (OCDS)'
+project = 'Dashboard de Contrataciones Públicas de Mendoza — basado en el Estándar de Datos de Contratación Abierta (OCDS)'
 copyright = '2025, Ing. Leonardo Villegas'
 author = 'Ing. Leonardo Villegas'
 
@@ -62,6 +62,9 @@ html_theme_options = {
 # Logo y favicon (coloca los archivos en _static/)
 html_logo = '_static/logo.png'
 html_favicon = '_static/favicon.ico'
+
+# Título HTML explícito para la cabecera del sitio
+html_title = 'Documentación del Proyecto Dashboard de Contrataciones Públicas de Mendoza — basado en el Estándar de Datos de Contratación Abierta (OCDS)'
 
 # Opciones para autodoc (Opción 1: mocks durante el build)
 autodoc_default_options = {

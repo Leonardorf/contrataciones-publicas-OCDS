@@ -1,7 +1,7 @@
-.. Proyecto Contar con Datos - Documentación principal
+.. Dashboard de Contrataciones Públicas de Mendoza — basado en el Estándar de Datos de Contratación Abierta (OCDS) - Documentación principal
 
-Documentación del Proyecto Contar con Datos
-============================================================
+Documentación del Proyecto Dashboard de Contrataciones Públicas de Mendoza — basado en el Estándar de Datos de Contratación Abierta (OCDS)
+=======================================================================================================================================
 
 Introducción
 ============
