@@ -23,6 +23,37 @@ app = dash.Dash(
 app.title = "Dashboard de Contrataciones Públicas de Mendoza (OCDS)"
 server = app.server
 
+# Favicon: si no existe en assets/, servir el de _static/ con override de index
+try:
+    assets_favicon = os.path.exists(os.path.join("assets", "favicon.ico"))
+    static_favicon = os.path.exists(os.path.join("_static", "favicon.ico"))
+    if not assets_favicon and static_favicon:
+        @app.server.route('/_static/<path:filename>')
+        def serve_static_folder(filename):
+            return flask.send_from_directory(os.path.abspath('_static'), filename)
+
+        app.index_string = """
+        <!DOCTYPE html>
+        <html>
+            <head>
+                {%metas%}
+                <title>{%title%}</title>
+                <link rel="icon" type="image/x-icon" href="/_static/favicon.ico" />
+                {%css%}
+            </head>
+            <body>
+                {%app_entry%}
+                <footer>
+                    {%config%}
+                    {%scripts%}
+                    {%renderer%}
+                </footer>
+            </body>
+        </html>
+        """
+except Exception:
+    pass
+
 # Configuración manual para servir archivos estáticos desde la carpeta 'assets'
 # Agregar mensajes de depuración en la función para servir archivos estáticos
 @app.server.route('/assets/<path:path>')
@@ -415,13 +446,21 @@ def reload_data_route():
 # ------------------------------------------------------
 # ENCABEZADO CON ESCUDO
 # ------------------------------------------------------
+# Determinar logos: usar locales si existen, con fallback a URLs
+LOGO_GOV_LOCAL = os.path.join("assets", "marca_gov.png")
+LOGO_OCDS_LOCAL = os.path.join("assets", "OCDS-logo-grey.avif")
+LOGO_GOV_SRC = \
+    ("/assets/marca_gov.png" if os.path.exists(LOGO_GOV_LOCAL) else "https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png")
+LOGO_OCDS_SRC = \
+    ("/assets/OCDS-logo-grey.avif" if os.path.exists(LOGO_OCDS_LOCAL) else "https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800")
+
 header = dbc.Navbar(
     dbc.Container(
         dbc.Row([
             dbc.Col(
                 html.A(
                     html.Img(
-                        src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
+                        src=LOGO_GOV_SRC,
                         style={"height": "48px"}
                     ),
                     href="https://www.mendoza.gov.ar/compras/",
@@ -442,7 +481,7 @@ header = dbc.Navbar(
             dbc.Col(
                 html.A(
                     html.Img(
-                        src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
+                        src=LOGO_OCDS_SRC,
                         style={"height": "36px", "backgroundColor": "white", "padding": "2px", "borderRadius": "4px"}
                     ),
                     href="https://www.open-contracting.org/",
