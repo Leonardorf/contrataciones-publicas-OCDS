@@ -1,0 +1,30 @@
+/* Ajustes de legibilidad y espaciado en la UI del dashboard */
+
+/* Navbar: links más compactos y tipografía levemente menor */
+.navbar .nav-link {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.95rem !important;
+}
+
+/* Marca del navbar más discreta */
+.navbar-brand {
+  font-size: 1rem !important;
+}
+
+/* Títulos dentro del contenido principal más compactos */
+#page-content h4 {
+  font-size: 1.1rem;
+  line-height: 1.25;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+#page-content h5 {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+/* Tablas: celdas un poco más densas */
+.dash-table-container .dash-spreadsheet td,
+.dash-table-container .dash-spreadsheet th {
+  padding: 0.25rem 0.5rem;
+}

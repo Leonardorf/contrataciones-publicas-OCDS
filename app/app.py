@@ -368,46 +368,93 @@ if not SPHINX_BUILD and not LAZY_LOAD:
 @app.server.route('/reload-data')
 def reload_data_route():
     if SPHINX_BUILD:
+        # Si el navegador pide HTML, devolvemos una pequeña página informativa
+        if 'text/html' in flask.request.headers.get('Accept', ''):
+            return (
+                """
+                <html><body style='font-family:system-ui'>
+                <h3>Recarga de datos</h3>
+                <p>Modo SPHINX_BUILD activo: no se carga dataset.</p>
+                <p><a href='/'>Volver al inicio</a></p>
+                </body></html>
+                """,
+                200,
+                {"Content-Type": "text/html"}
+            )
         return flask.jsonify(message="Modo SPHINX_BUILD: no se carga dataset"), 200
     ensure_data_loaded(force=True)
     if _DATA_ERROR:
+        if 'text/html' in flask.request.headers.get('Accept', ''):
+            return (
+                f"""
+                <html><body style='font-family:system-ui'>
+                <h3>Recarga de datos</h3>
+                <p style='color:#b00020'>Error: {_DATA_ERROR}</p>
+                <p><a href='/'>Volver al inicio</a></p>
+                </body></html>
+                """,
+                500,
+                {"Content-Type": "text/html"}
+            )
         return flask.jsonify(status="error", error=_DATA_ERROR), 500
+    # OK
+    if 'text/html' in flask.request.headers.get('Accept', ''):
+        return (
+            f"""
+            <html><body style='font-family:system-ui'>
+            <h3>Recarga de datos</h3>
+            <p>Recarga completada. Filas: {len(df)}</p>
+            <p><a href='/'>Volver al inicio</a></p>
+            </body></html>
+            """,
+            200,
+            {"Content-Type": "text/html"}
+        )
     return flask.jsonify(status="ok", rows=len(df)), 200
 
 # ------------------------------------------------------
 # ENCABEZADO CON ESCUDO
 # ------------------------------------------------------
 header = dbc.Navbar(
-    dbc.Container([
-        html.A(
-            html.Img(
-                src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
-                style={"height": "80px"}  # Ajustamos el tamaño
-            ),
-            href="https://www.mendoza.gov.ar/compras/",  # Hipervínculo al escudo de gobierno
-            target="_blank"  # Abrir en una nueva pestaña
-        ),
-        html.H1([
-            "Dashboard de Contrataciones Públicas de Mendoza (OCDS)          ",
-            html.A(
-                html.Img(
-                    src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
-                    style={
-                        "height": "50px",
-                        "marginLeft": "100px",
-                        "backgroundColor": "white",  # Fondo blanco
-                        "padding": "5px",  # Espaciado interno
-                        "borderRadius": "5px"  # Bordes redondeados
-                    }
+    dbc.Container(
+        dbc.Row([
+            dbc.Col(
+                html.A(
+                    html.Img(
+                        src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
+                        style={"height": "48px"}
+                    ),
+                    href="https://www.mendoza.gov.ar/compras/",
+                    target="_blank"
                 ),
-                href="https://www.open-contracting.org/",  # Hipervínculo a Open Contracting
-                target="_blank"  # Abrir en una nueva pestaña
+                width="auto"
+            ),
+            dbc.Col(
+                html.Div(
+                    html.H2(
+                        "Dashboard de Contrataciones Públicas de Mendoza (OCDS)",
+                        className="text-white text-center",
+                        style={"fontSize": "1.25rem", "margin": 0}
+                    ),
+                ),
+                align="center"
+            ),
+            dbc.Col(
+                html.A(
+                    html.Img(
+                        src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
+                        style={"height": "36px", "backgroundColor": "white", "padding": "2px", "borderRadius": "4px"}
+                    ),
+                    href="https://www.open-contracting.org/",
+                    target="_blank"
+                ),
+                width="auto"
             )
-        ], className="text-center text-white", style={"marginLeft": "-100%"}),  # Ajustamos el margen para centrar mejor
-    ]),
+        ], align="center", className="g-2"),
+    ),
     color="dark",
     dark=True,
-    className="mb-4"
+    className="mb-3"
 )
 
 # ------------------------------------------------------
@@ -419,26 +466,16 @@ app.layout = dbc.Container([
         children=[
             dbc.NavItem(dbc.NavLink("🏠 Home", href="/", active="exact")),
             dbc.NavItem(dbc.NavLink("🏷️ Insumos", href="/insumos", active="exact")),
-            dbc.NavItem(dbc.NavLink("🔎 Procesos Filtrados", href="/procesos", active="exact")),
+            dbc.NavItem(dbc.NavLink("🔎 Procesos", href="/procesos", active="exact")),
             dbc.NavItem(dbc.NavLink("ℹ️ Acerca del proyecto", href="/acerca", active="exact")),
             dbc.NavItem(dbc.NavLink("📖 Documentación", href="https://leonardorf.github.io/contrataciones-publicas-OCDS/", target="_blank")),
         ],
-        brand=[
-            "📊 Dashboard de Contrataciones Públicas de Mendoza (OCDS)",
-            html.Img(
-                src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
-                style={"height": "50px", "marginRight": "10px"}  # Ajustamos el tamaño y el margen
-            ),
-            html.Img(
-                src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
-                style={"height": "50px", "marginLeft": "10px", "backgroundColor": "white",
-                     
-                    "borderRadius": "5px"  }  # Ajustamos el tamaño y el margen
-            )
-        ],
+        brand="📊 Dashboard OCDS Mendoza",
+        brand_href="/",
         color="primary",
         dark=True,
-        className="mb-4"
+        className="mb-4",
+        style={"fontSize": "90%"}
     ),
     dcc.Location(id="url"),
     dcc.Store(id="reload-done"),
@@ -786,7 +823,13 @@ def layout_acerca():
         html.Ul([
             html.Li([
                 html.Strong("Autor: "),
-                html.A("Ing. Leonardo Villegas", href="https://github.com/Leonardorf", target="_blank")
+                html.A("Ing. Leonardo Villegas", href="https://github.com/Leonardorf", target="_blank"),
+                html.Span(" · "),
+                html.A("Perfil en GitHub", href="https://github.com/Leonardorf", target="_blank")
+            ]),
+            html.Li([
+                html.Strong("Contacto: "),
+                html.A("leonfevi@gmail.com", href="mailto:leonfevi@gmail.com")
             ]),
             html.Li([
                 html.Strong("Documentación: "),
@@ -817,13 +860,13 @@ def layout_acerca():
 # ------------------------------------------------------
 @app.callback(Output("page-content", "children"), Input("url", "pathname"))
 def mostrar_pagina(pathname):
-    if pathname == "/":
+    if pathname in ("/", None):
         return layout_home()
-    elif pathname == "/insumos":
+    elif pathname and pathname.startswith("/insumos"):
         return layout_insumos()
-    elif pathname == "/procesos":
+    elif pathname and pathname.startswith("/procesos"):
         return layout_procesos()
-    elif pathname == "/acerca":
+    elif pathname and pathname.startswith("/acerca"):
         return layout_acerca()
     else:
         return html.H4("Página no encontrada.")
