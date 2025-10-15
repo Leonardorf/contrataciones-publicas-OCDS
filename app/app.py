@@ -748,6 +748,10 @@ def layout_procesos():
     compradores = sorted([x for x in df["licitante"].dropna().unique()])
     proveedores = sorted([x for x in df["proveedor"].dropna().unique()])
     tipos = sorted([x for x in df["tipo_contratacion"].dropna().unique()])
+    mapping_tipos = {
+        "CDI": "Contratación Directa (CDI)",
+        "LPU": "Licitación Pública (LPU)"
+    }
 
     return html.Div([
         html.H4("🔎 Procesos Filtrados"),
@@ -755,7 +759,14 @@ def layout_procesos():
             dbc.Col(dcc.Dropdown(id="filtro-año", options=[{"label": str(a), "value": a} for a in años], value=años[-1], clearable=False), md=3),
             dbc.Col(dcc.Dropdown(id="filtro-comprador", options=[{"label": c, "value": c} for c in compradores], placeholder="Seleccionar comprador"), md=3),
             dbc.Col(dcc.Dropdown(id="filtro-proveedor", options=[{"label": p, "value": p} for p in proveedores], placeholder="Seleccionar proveedor"), md=3),
-            dbc.Col(dcc.Dropdown(id="filtro-tipo", options=[{"label": t, "value": t} for t in tipos], placeholder="Seleccionar tipo"), md=3)
+            dbc.Col(
+                dcc.Dropdown(
+                    id="filtro-tipo",
+                    options=[{"label": mapping_tipos.get(t, t), "value": t} for t in tipos],
+                    placeholder="Seleccionar tipo"
+                ),
+                md=3
+            )
         ], className="mb-3"),
         html.Div(id="tabla-procesos"),
         html.Hr(),
