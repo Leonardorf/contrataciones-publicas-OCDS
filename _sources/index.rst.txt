@@ -3,6 +3,9 @@
 Documentación del Proyecto Dashboard de Contrataciones Públicas de Mendoza — basado en el Estándar de Datos de Contratación Abierta (OCDS)
 =======================================================================================================================================
 
+Enlace a la documentación publicada (GitHub Pages):
+https://leonardorf.github.io/contrataciones-publicas-OCDS/
+
 Introducción
 ============
 Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas en la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
