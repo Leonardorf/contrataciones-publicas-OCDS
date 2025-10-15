@@ -20,7 +20,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.COSMO],  # Tema Bootstrap mejorado
     suppress_callback_exceptions=True
 )
-app.title = "Contrataciones Públicas de Mendoza (OCDS)"
+app.title = "Dashboard de Contrataciones Públicas de Mendoza (OCDS)"
 server = app.server
 
 # Configuración manual para servir archivos estáticos desde la carpeta 'assets'
@@ -388,7 +388,7 @@ header = dbc.Navbar(
             target="_blank"  # Abrir en una nueva pestaña
         ),
         html.H1([
-            "Contrataciones Públicas de Mendoza (OCDS)          ",
+            "Dashboard de Contrataciones Públicas de Mendoza (OCDS)          ",
             html.A(
                 html.Img(
                     src="https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800",
@@ -422,7 +422,7 @@ app.layout = dbc.Container([
             dbc.NavItem(dbc.NavLink("🔎 Procesos Filtrados", href="/procesos", active="exact")),
         ],
         brand=[
-            "📊 Dashboard OCDS Mendoza",
+            "📊 Dashboard de Contrataciones Públicas de Mendoza (OCDS)",
             html.Img(
                 src="https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png",
                 style={"height": "50px", "marginRight": "10px"}  # Ajustamos el tamaño y el margen
