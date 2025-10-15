@@ -420,6 +420,7 @@ app.layout = dbc.Container([
             dbc.NavItem(dbc.NavLink("🏠 Home", href="/", active="exact")),
             dbc.NavItem(dbc.NavLink("🏷️ Insumos", href="/insumos", active="exact")),
             dbc.NavItem(dbc.NavLink("🔎 Procesos Filtrados", href="/procesos", active="exact")),
+            dbc.NavItem(dbc.NavLink("ℹ️ Acerca del proyecto", href="/acerca", active="exact")),
             dbc.NavItem(dbc.NavLink("📖 Documentación", href="https://leonardorf.github.io/contrataciones-publicas-OCDS/", target="_blank")),
         ],
         brand=[
@@ -773,6 +774,45 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
     return tabla
 
 # ------------------------------------------------------
+# Página ACERCA DEL PROYECTO
+# ------------------------------------------------------
+def layout_acerca():
+    return html.Div([
+        html.H4("ℹ️ Acerca del proyecto"),
+        html.P(
+            "Este dashboard presenta visualizaciones y tablas construidas a partir de datos publicados bajo el estándar OCDS (Open Contracting Data Standard) para la Provincia de Mendoza.",
+            style={"fontStyle": "italic"}
+        ),
+        html.Ul([
+            html.Li([
+                html.Strong("Autor: "),
+                html.A("Ing. Leonardo Villegas", href="https://github.com/Leonardorf", target="_blank")
+            ]),
+            html.Li([
+                html.Strong("Documentación: "),
+                html.A("GitHub Pages", href="https://leonardorf.github.io/contrataciones-publicas-OCDS/", target="_blank")
+            ]),
+            html.Li([
+                html.Strong("Repositorio: "),
+                html.A("Leonardorf/contrataciones-publicas-OCDS", href="https://github.com/Leonardorf/contrataciones-publicas-OCDS", target="_blank")
+            ]),
+            html.Li([
+                html.Strong("Endpoints de servicio: "),
+                html.Code("/health"), html.Span(" y "), html.Code("/reload-data")
+            ]),
+            html.Li([
+                html.Strong("Fuente de datos: "),
+                html.A("Portal de Datos Abiertos - Compras Mendoza", href="https://datosabiertos-compras.mendoza.gov.ar/", target="_blank")
+            ]),
+        ], style={"lineHeight": "1.8"}),
+        html.Hr(),
+        html.P(
+            "Sugerencias y mejoras son bienvenidas a través de issues o PRs en el repositorio.",
+            className="text-muted"
+        )
+    ])
+
+# ------------------------------------------------------
 # RUTAS
 # ------------------------------------------------------
 @app.callback(Output("page-content", "children"), Input("url", "pathname"))
@@ -783,6 +823,8 @@ def mostrar_pagina(pathname):
         return layout_insumos()
     elif pathname == "/procesos":
         return layout_procesos()
+    elif pathname == "/acerca":
+        return layout_acerca()
     else:
         return html.H4("Página no encontrada.")
 
