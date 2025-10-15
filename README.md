@@ -2,6 +2,8 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Leonardorf/contrataciones-publicas-OCDS?quickstart=1)
 
+> Documentación del proyecto (GitHub Pages): https://leonardorf.github.io/contrataciones-publicas-OCDS/
+
 ## Introducción
 Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas de la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
 

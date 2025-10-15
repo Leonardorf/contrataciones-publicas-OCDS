@@ -420,6 +420,7 @@ app.layout = dbc.Container([
             dbc.NavItem(dbc.NavLink("🏠 Home", href="/", active="exact")),
             dbc.NavItem(dbc.NavLink("🏷️ Insumos", href="/insumos", active="exact")),
             dbc.NavItem(dbc.NavLink("🔎 Procesos Filtrados", href="/procesos", active="exact")),
+            dbc.NavItem(dbc.NavLink("📖 Documentación", href="https://leonardorf.github.io/contrataciones-publicas-OCDS/", target="_blank")),
         ],
         brand=[
             "📊 Dashboard de Contrataciones Públicas de Mendoza (OCDS)",
