@@ -4,6 +4,9 @@
 
 > Documentación del proyecto (GitHub Pages): https://leonardorf.github.io/contrataciones-publicas-OCDS/
 
+**Autor:** Ing. Leonardo Raúl Federico Villegas  
+Contacto: leonfevi@gmail.com · GitHub: https://github.com/Leonardorf
+
 ## Introducción
 Este proyecto tiene como objetivo proporcionar una plataforma para analizar y visualizar datos de contrataciones públicas de la Provincia de Mendoza, utilizando el estándar OCDS (Open Contracting Data Standard).
 

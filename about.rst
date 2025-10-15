@@ -12,5 +12,7 @@ Objetivos
 
 Contacto
 --------
-- Autor: Ing. Leonardo Villegas
+- Autor: Ing. Leonardo Raúl Federico Villegas
+- Email: leonfevi@gmail.com
+- GitHub: https://github.com/Leonardorf
 - Repositorio: https://github.com/Leonardorf/contrataciones-publicas-OCDS

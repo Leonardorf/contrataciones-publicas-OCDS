@@ -12,8 +12,8 @@ os.environ["SPHINX_BUILD"] = "1"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Dashboard de Contrataciones Públicas de Mendoza — basado en el Estándar de Datos de Contratación Abierta (OCDS)'
-copyright = '2025, Ing. Leonardo Villegas'
-author = 'Ing. Leonardo Villegas'
+copyright = '2025, Ing. Leonardo Raúl Federico Villegas'
+author = 'Ing. Leonardo Raúl Federico Villegas'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
