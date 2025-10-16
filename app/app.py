@@ -1435,7 +1435,8 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8050"))
     debug = os.getenv("DEBUG", "1") not in ("0", "false", "False")
-    app.run(host=host, port=port, debug=debug)
+    # Importante en local: desactivar el reloader para evitar doble proceso y estados globales inconsistentes
+    app.run(host=host, port=port, debug=debug, use_reloader=False)
 
 # ------------------------------------------------------
 # Callbacks auxiliares para recarga de datos vía botón (cuando df vacío)
