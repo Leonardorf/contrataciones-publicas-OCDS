@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.9] - 2025-10-16
+
+### Cambios
+- Producción: servidor gunicorn con 1 worker (gthread) y 4 threads; DEBUG desactivado en Render. Procfile y render.yaml ajustados.
+- Normalización/precálculo: se construye df_items global durante la carga y se elimina de df principal la estructura pesada (awards, contracts, items), además de downcasting y categorías en columnas frecuentes.
+- Home: evitar TypeError al mapear/fillna sobre columnas categóricas convirtiendo a string antes de mapear.
+- Insumos: evitar explosión de memoria en groupby usando observed=True y forzando 'Licitante' a string.
+- Procesos: mantiene ordenamiento por fecha usando columna interna fecha_dt y muestra YYYY-MM-DD.
+
+---
+
 ## [0.1.8] - 2025-10-15
 
 ### Cambios

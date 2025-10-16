@@ -182,25 +182,44 @@ def extraer_contratos(data):
             if match:
                 tender_id = match.group(1)
 
+        # utilitario para mapear award->contract y obtener orden de compra por proveedor
+        def _obtener_orden_compra(_awards, _contracts, _proveedor):
+            if not _awards or not _contracts or not _proveedor:
+                return None
+            try:
+                for awd in _awards:
+                    if awd.get("suppliers"):
+                        for sup in awd["suppliers"]:
+                            if sup.get("name") == _proveedor:
+                                aw_id = awd.get("id")
+                                for c in (_contracts or []):
+                                    if c.get("awardID") == aw_id:
+                                        return c.get("id")
+                return None
+            except Exception:
+                return None
+
         for aw in awards:
             monto = aw.get("value", {}).get("amount")
             moneda = aw.get("value", {}).get("currency")
             suppliers = aw.get("suppliers", [])
             if suppliers:
                 for sup in suppliers:
+                    proveedor_nombre = sup.get("name")
                     registros.append({
                         "fecha": fecha,
                         "tender_id": tender_id,
                         "titulo": tender.get("title"),
                         "licitante": buyer.get("name"),
-                        "proveedor": sup.get("name"),
+                        "proveedor": proveedor_nombre,
                         "monto": monto,
                         "moneda": moneda,
                         "contracts": contracts,
                         "items": tender.get("items", []),
                         "contrato_desc": contrato_desc,
                         "submission_details": submission_details,
-                        "awards": awards
+                        "awards": awards,
+                        "orden_compra": _obtener_orden_compra(awards, contracts, proveedor_nombre)
                     })
             else:
                 registros.append({
@@ -215,7 +234,8 @@ def extraer_contratos(data):
                     "items": tender.get("items", []),
                     "contrato_desc": contrato_desc,
                     "submission_details": submission_details,
-                    "awards": awards
+                    "awards": awards,
+                    "orden_compra": None
                 })
 
     df = pd.DataFrame(registros)
@@ -342,12 +362,19 @@ df = pd.DataFrame({
     "titulo": pd.Series([], dtype="string"),
     "proveedor": pd.Series([], dtype="string"),
 })
+df_items = pd.DataFrame({
+    "año": pd.Series([], dtype="Int64"),
+    "Código": pd.Series([], dtype="string"),
+    "Descripción corta": pd.Series([], dtype="string"),
+    "Licitante": pd.Series([], dtype="string"),
+    "Monto (Millones)": pd.Series([], dtype="float"),
+})
 _DATA_LOADED = False
 _DATA_LOCK = threading.Lock()
 _DATA_ERROR = None
 
 def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
-    global data, df, _DATA_LOADED, _DATA_ERROR
+    global data, df, df_items, _DATA_LOADED, _DATA_ERROR
     logging.info("Iniciando carga de datos OCDS desde %s", URL_JSON)
     last_err = None
     for intento in range(1, max_retries + 1):
@@ -368,8 +395,59 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
             lambda r: detectar_tipo(r.get("tender_id"), r.get("titulo"), r.get("contrato_desc"), r.get("submission_details")),
             axis=1
         )
+        # Numéricos
         df_local["monto"] = pd.to_numeric(df_local["monto"], errors="coerce").fillna(0.0)
         df_local["monto_millones"] = df_local["monto"] / 1_000_000.0
+
+        # Precálculos de fecha y tipos eficientes
+        df_local["fecha_dt"] = pd.to_datetime(df_local["fecha"], errors="coerce")
+        df_local["fecha"] = df_local["fecha_dt"]  # mantener dtype datetime64
+        df_local["año"] = df_local["fecha_dt"].dt.year.astype("Int16")
+
+        # Construir df_items global para página Insumos
+        items_reg = []
+        for _, r in df_local.iterrows():
+            its = r.get("items") or []
+            if its:
+                for it in its:
+                    codigo = (it.get("classification", {}) or {}).get("id") or it.get("id")
+                    descripcion = it.get("description")
+                    if codigo and descripcion:
+                        items_reg.append({
+                            "año": int(r.get("año")) if pd.notna(r.get("año")) else None,
+                            "Código": str(codigo),
+                            "Descripción corta": str(descripcion)[:80],
+                            "Licitante": r.get("licitante"),
+                            "Monto (Millones)": float(r.get("monto_millones") or 0.0)
+                        })
+        df_items = pd.DataFrame(items_reg)
+        if not df_items.empty:
+            df_items["año"] = df_items["año"].astype("Int16")
+            df_items["Código"] = df_items["Código"].astype("string")
+            df_items["Descripción corta"] = df_items["Descripción corta"].astype("string")
+            try:
+                df_items["Licitante"] = df_items["Licitante"].astype("category")
+            except Exception:
+                pass
+            df_items["Monto (Millones)"] = pd.to_numeric(df_items["Monto (Millones)"], errors="coerce", downcast="float").fillna(0.0)
+
+        # Downcast/categorías en df principal
+        df_local["monto"] = pd.to_numeric(df_local["monto"], errors="coerce", downcast="float").fillna(0.0)
+        df_local["monto_millones"] = pd.to_numeric(df_local["monto_millones"], errors="coerce", downcast="float").fillna(0.0)
+        for col in ["licitante", "tipo_contratacion", "moneda"]:
+            if col in df_local.columns:
+                try:
+                    df_local[col] = df_local[col].astype("category")
+                except Exception:
+                    pass
+
+        # Eliminar columnas pesadas ya no necesarias en UI
+        for heavy in ["awards", "contracts", "items", "contrato_desc", "submission_details"]:
+            if heavy in df_local.columns:
+                try:
+                    df_local.drop(columns=[heavy], inplace=True)
+                except Exception:
+                    pass
     data = raw
     df = df_local
     _DATA_LOADED = True
@@ -516,7 +594,7 @@ app.layout = dbc.Container([
     dcc.Location(id="url"),
     dcc.Store(id="reload-done"),
     html.Div(id="page-content"),
-    html.P("Versión 0.1.8 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+    html.P("Versión 0.1.9 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
 
 # ------------------------------------------------------
@@ -590,7 +668,9 @@ def actualizar_home(año_sel):
         "CDI": "Contratación Directa (CDI)",
         "LPU": "Licitación Pública (LPU)"
     }
-    totales["tipo_contratacion_ext"] = totales["tipo_contratacion"].map(mapping_tipos).fillna(totales["tipo_contratacion"])  # fallback a valor original
+    # Evitar conflictos con dtype 'category' convirtiendo a string antes de mapear
+    _tc_series = totales["tipo_contratacion"].astype("string")
+    totales["tipo_contratacion_ext"] = _tc_series.map(mapping_tipos).fillna(_tc_series)  # fallback a valor original
     totales["Monto (Millones)"] = totales["monto_millones"].apply(format_mill_int)
     totales_display = totales[["tipo_contratacion_ext", "Monto (Millones)"]].rename(columns={"tipo_contratacion_ext": "Tipo Contratación"})
 
@@ -614,7 +694,9 @@ def actualizar_home(año_sel):
     # --- Monto por tipo de contratación (gráfico) ---
     dist_tipo = df_f.groupby("tipo_contratacion", as_index=False)["monto_millones"].sum()
     dist_tipo = dist_tipo[dist_tipo["monto_millones"] > 0]
-    dist_tipo["tipo_contratacion_ext"] = dist_tipo["tipo_contratacion"].map(mapping_tipos).fillna(dist_tipo["tipo_contratacion"])
+    # Evitar conflictos con dtype 'category' convirtiendo a string antes de mapear
+    _dtc_series = dist_tipo["tipo_contratacion"].astype("string")
+    dist_tipo["tipo_contratacion_ext"] = _dtc_series.map(mapping_tipos).fillna(_dtc_series)
     fig_pie = px.pie(dist_tipo, values="monto_millones", names="tipo_contratacion_ext", title=capitalize_title(f"Monto por tipo de contratación ({año_sel})"))
     fig_pie.update_traces(hovertemplate="%{label}: %{value:.0f}M")
 
@@ -738,23 +820,22 @@ def actualizar_insumos(año_sel):
     dash.html.Div
         Tabla y gráfico de barras con los insumos más contratados.
     """
-    df_f = df[df["año"] == año_sel]
-    items = []
-    for _, row in df_f.iterrows():
-        for it in row.get("items", []):
-            codigo = it.get("classification", {}).get("id") or it.get("id")
-            descripcion = it.get("description")
-            if codigo and descripcion:
-                items.append({
-                    "Código": codigo,
-                    "Descripción corta": descripcion[:80],
-                    "Licitante": row.get("licitante"),
-                    "Monto (Millones)": row.get("monto_millones", 0)
-                })
-    if not items:
+    # Usar df_items global precomputado
+    df_items_year = df_items[df_items["año"] == año_sel].copy()
+    if df_items_year.empty:
         return html.Div("⚠️ No se encontraron items para este año.")
-    df_items = pd.DataFrame(items)
-    df_top = df_items.groupby(["Código", "Descripción corta", "Licitante"], as_index=False)["Monto (Millones)"].sum().sort_values("Monto (Millones)", ascending=False).head(30)
+    # Evitar producto cartesiano por dtype 'category': convertir 'Licitante' a string y usar observed=True
+    try:
+        df_items_year["Licitante"] = df_items_year["Licitante"].astype("string")
+    except Exception:
+        pass
+    df_top = (
+        df_items_year
+        .groupby(["Código", "Descripción corta", "Licitante"], as_index=False, observed=True)["Monto (Millones)"]
+        .sum()
+        .sort_values("Monto (Millones)", ascending=False)
+        .head(30)
+    )
 
     columns_out_insumos = [
         {"name": "Código", "id": "Código"},
@@ -899,27 +980,12 @@ def filtrar_procesos(año, comprador, proveedor, tipo, sort_by):
     if año is None or df_f.empty:
         return []
 
-    # Preservar una columna interna para ordenar correctamente por datetime
-    df_f["fecha_dt"] = pd.to_datetime(df_f["fecha"], errors="coerce")
-    # Formato visible: YYYY-MM-DD (no cambiar)
-    df_f["fecha"] = df_f["fecha"].dt.strftime("%Y-%m-%d")
-    # Ajustamos la lógica para buscar el award correspondiente al proveedor y luego el contrato
-    def obtener_orden_compra(awards, contracts, proveedor):
-        if not awards or not contracts:
-            return None
-        # Buscar el award que coincida con el proveedor
-        for award in awards:
-            if award.get("suppliers"):
-                for supplier in award["suppliers"]:
-                    if supplier.get("name") == proveedor:
-                        # Buscar el contrato correspondiente al award
-                        award_id = award.get("id")
-                        for contract in contracts:
-                            if contract.get("awardID") == award_id:
-                                return contract.get("id")
-        return None
-
-    df_f["Orden de Compra"] = df_f.apply(lambda row: obtener_orden_compra(row.get("awards"), row.get("contracts"), row.get("proveedor")), axis=1)
+    # Ya tenemos 'fecha_dt' precalculada y 'orden_compra' en df
+    df_f["fecha"] = pd.to_datetime(df_f["fecha"], errors="coerce").dt.strftime("%Y-%m-%d")
+    if "orden_compra" in df_f.columns:
+        df_f["Orden de Compra"] = df_f["orden_compra"]
+    else:
+        df_f["Orden de Compra"] = None
 
     # columna Proceso (tender_id), y formateamos monto para mostrar
     df_f = df_f.rename(columns={"tender_id": "Proceso", "titulo": "Título"})
@@ -1040,7 +1106,8 @@ if __name__ == "__main__":
     # Permitir configurar host/port por entorno (útil para Codespaces/Paas)
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8050"))
-    app.run(host=host, port=port, debug=True)
+    debug = os.getenv("DEBUG", "1") not in ("0", "false", "False")
+    app.run(host=host, port=port, debug=debug)
 
 # ------------------------------------------------------
 # Callbacks auxiliares para recarga de datos vía botón (cuando df vacío)
