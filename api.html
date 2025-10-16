@@ -59,7 +59,31 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="methodology.html">Metodología</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">API de la aplicación</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API de la aplicación</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.actualizar_home"><code class="docutils literal notranslate"><span class="pre">actualizar_home()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.actualizar_insumos"><code class="docutils literal notranslate"><span class="pre">actualizar_insumos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.capitalize_title"><code class="docutils literal notranslate"><span class="pre">capitalize_title()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.cargar_ocds"><code class="docutils literal notranslate"><span class="pre">cargar_ocds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.detectar_tipo"><code class="docutils literal notranslate"><span class="pre">detectar_tipo()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.ensure_data_loaded"><code class="docutils literal notranslate"><span class="pre">ensure_data_loaded()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.extraer_contratos"><code class="docutils literal notranslate"><span class="pre">extraer_contratos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.filtrar_procesos"><code class="docutils literal notranslate"><span class="pre">filtrar_procesos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.format_mill_hover"><code class="docutils literal notranslate"><span class="pre">format_mill_hover()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.format_mill_int"><code class="docutils literal notranslate"><span class="pre">format_mill_int()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.health"><code class="docutils literal notranslate"><span class="pre">health()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.layout_acerca"><code class="docutils literal notranslate"><span class="pre">layout_acerca()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.layout_home"><code class="docutils literal notranslate"><span class="pre">layout_home()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.layout_insumos"><code class="docutils literal notranslate"><span class="pre">layout_insumos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.layout_procesos"><code class="docutils literal notranslate"><span class="pre">layout_procesos()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.mostrar_pagina"><code class="docutils literal notranslate"><span class="pre">mostrar_pagina()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.reload_data_route"><code class="docutils literal notranslate"><span class="pre">reload_data_route()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.serve_static_assets"><code class="docutils literal notranslate"><span class="pre">serve_static_assets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.serve_static_folder"><code class="docutils literal notranslate"><span class="pre">serve_static_folder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.serve_test_file"><code class="docutils literal notranslate"><span class="pre">serve_test_file()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.serve_test_image"><code class="docutils literal notranslate"><span class="pre">serve_test_image()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#app.app.trigger_reload"><code class="docutils literal notranslate"><span class="pre">trigger_reload()</span></code></a></li>
+</ul>
+</li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">Acerca de</a><ul>
@@ -112,6 +136,302 @@
   <section id="api-de-la-aplicacion">
 <h1>API de la aplicación<a class="headerlink" href="#api-de-la-aplicacion" title="Link to this heading"></a></h1>
 <p>Documentación generada automáticamente desde el módulo principal de la app.</p>
+<dl class="py function" id="module-app.app">
+<dt class="sig sig-object py" id="app.app.actualizar_home">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">actualizar_home</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">año_sel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.actualizar_home" title="Link to this definition"></a></dt>
+<dd><p>Callback que actualiza el contenido de Home cuando cambia el año.</p>
+<section id="parametros">
+<h2>Parámetros<a class="headerlink" href="#parametros" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>año_sel<span class="classifier">int</span></dt><dd><p>Año seleccionado en el <code class="docutils literal notranslate"><span class="pre">Dropdown</span></code>.</p>
+</dd>
+</dl>
+</section>
+<section id="retorna">
+<h2>Retorna<a class="headerlink" href="#retorna" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dash.html.Div</dt><dd><p>Componentes con tabla de totales y gráficos correspondientes.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.actualizar_insumos">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">actualizar_insumos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">año_sel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">medida</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vista</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.actualizar_insumos" title="Link to this definition"></a></dt>
+<dd><p>Callback que arma el Top de insumos y su gráfico para el año dado.</p>
+<section id="id1">
+<h2>Parámetros<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>año_sel<span class="classifier">int</span></dt><dd><p>Año seleccionado.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Retorna<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dash.html.Div</dt><dd><p>Tabla y gráfico de barras con los insumos más contratados.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.capitalize_title">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">capitalize_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#capitalize_title"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.capitalize_title" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.cargar_ocds">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">cargar_ocds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ruta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#cargar_ocds"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.cargar_ocds" title="Link to this definition"></a></dt>
+<dd><p>Carga un JSON OCDS desde una URL o desde una ruta local.</p>
+<section id="id3">
+<h2>Parámetros<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>ruta<span class="classifier">str</span></dt><dd><p>Ruta absoluta/relativa del archivo JSON o URL HTTP(S).</p>
+</dd>
+</dl>
+</section>
+<section id="id4">
+<h2>Retorna<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dict</dt><dd><p>Objeto Python con el contenido JSON del release OCDS.</p>
+</dd>
+</dl>
+</section>
+<section id="lanza">
+<h2>Lanza<a class="headerlink" href="#lanza" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>ValueError</dt><dd><p>Si la ruta no es válida ni URL ni archivo existente.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.detectar_tipo">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">detectar_tipo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tender_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titulo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contrato_desc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">submission_details</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#detectar_tipo"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.detectar_tipo" title="Link to this definition"></a></dt>
+<dd><p>Intenta clasificar el tipo de contratación.</p>
+<p>La heurística busca primero un sufijo en <code class="docutils literal notranslate"><span class="pre">tender_id</span></code> (p. ej. <code class="docutils literal notranslate"><span class="pre">-LPU99</span></code>),
+y si no está disponible, infiere desde <code class="docutils literal notranslate"><span class="pre">titulo</span></code>, <code class="docutils literal notranslate"><span class="pre">submission_details</span></code> o
+<code class="docutils literal notranslate"><span class="pre">contrato_desc</span></code> buscando palabras clave.</p>
+<section id="id5">
+<h2>Parámetros<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>tender_id<span class="classifier">str | None</span></dt><dd><p>Identificador del proceso licitatorio.</p>
+</dd>
+<dt>titulo<span class="classifier">str | None</span></dt><dd><p>Título del proceso (si existe).</p>
+</dd>
+<dt>contrato_desc<span class="classifier">str | None</span></dt><dd><p>Descripción de contrato (fallback).</p>
+</dd>
+<dt>submission_details<span class="classifier">str | None</span></dt><dd><p>Texto con detalles del método de presentación (si existe).</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h2>Retorna<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>Uno de <code class="docutils literal notranslate"><span class="pre">{&quot;LPU&quot;,</span> <span class="pre">&quot;CDI&quot;,</span> <span class="pre">&quot;Otro&quot;}</span></code>.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.ensure_data_loaded">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">ensure_data_loaded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#ensure_data_loaded"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.ensure_data_loaded" title="Link to this definition"></a></dt>
+<dd><p>Garantiza que los datos estén cargados (lazy si LAZY_LOAD=1).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.extraer_contratos">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">extraer_contratos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#extraer_contratos"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.extraer_contratos" title="Link to this definition"></a></dt>
+<dd><p>Transforma el JSON OCDS en un DataFrame tabular de contratos/adjudicaciones.</p>
+<p>Recorre la lista de <code class="docutils literal notranslate"><span class="pre">releases</span></code> y normaliza campos relevantes para
+análisis y visualización (fecha, tender_id, licitante, proveedor, monto,
+tipo de contratación estimado, etc.).</p>
+<section id="id7">
+<h2>Parámetros<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>data<span class="classifier">dict</span></dt><dd><p>Estructura JSON con el/los releases en formato OCDS.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h2>Retorna<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>pandas.DataFrame</dt><dd><p>Tabla con registros por proveedor/adjudicación.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.filtrar_procesos">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">filtrar_procesos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">año</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comprador</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proveedor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tipo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.filtrar_procesos" title="Link to this definition"></a></dt>
+<dd><p>Callback que filtra procesos por año, comprador, proveedor y tipo.</p>
+<section id="id9">
+<h2>Parámetros<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>año<span class="classifier">int</span></dt><dd><p>Año a filtrar.</p>
+</dd>
+<dt>comprador<span class="classifier">str | None</span></dt><dd><p>Nombre del licitante (opcional).</p>
+</dd>
+<dt>proveedor<span class="classifier">str | None</span></dt><dd><p>Nombre del proveedor (opcional).</p>
+</dd>
+<dt>tipo<span class="classifier">str | None</span></dt><dd><p>Tipo de contratación, p. ej. <code class="docutils literal notranslate"><span class="pre">&quot;LPU&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;CDI&quot;</span></code> (opcional).</p>
+</dd>
+</dl>
+</section>
+<section id="id10">
+<h2>Retorna<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dash.dash_table.DataTable | dash.html.Div</dt><dd><p>Tabla con resultados o mensaje si no hay coincidencias.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.format_mill_hover">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">format_mill_hover</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#format_mill_hover"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.format_mill_hover" title="Link to this definition"></a></dt>
+<dd><p>Formatea valores en millones para tooltips (hover) en gráficos.</p>
+<p>Muestra el valor con <code class="docutils literal notranslate"><span class="pre">decimals</span></code> decimales y sufijo <code class="docutils literal notranslate"><span class="pre">M</span></code>.</p>
+<section id="id11">
+<h2>Parámetros<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>x<span class="classifier">float | int | None</span></dt><dd><p>Valor en millones.</p>
+</dd>
+<dt>decimals<span class="classifier">int</span></dt><dd><p>Cantidad de decimales a mostrar (por defecto 3).</p>
+</dd>
+</dl>
+</section>
+<section id="id12">
+<h2>Retorna<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>Cadena formateada o <code class="docutils literal notranslate"><span class="pre">&quot;-&quot;</span></code> si el valor no es válido.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.format_mill_int">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">format_mill_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#format_mill_int"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.format_mill_int" title="Link to this definition"></a></dt>
+<dd><p>Formatea números en millones para su uso en tablas.</p>
+<ul class="simple">
+<li><p>Recibe un valor numérico que representa millones (p. ej. <code class="docutils literal notranslate"><span class="pre">54137.6</span></code>).</p></li>
+<li><p>Redondea al entero (<code class="docutils literal notranslate"><span class="pre">54137</span></code>).</p></li>
+<li><p>Devuelve un texto con separador de miles <code class="docutils literal notranslate"><span class="pre">.</span></code> y sufijo <code class="docutils literal notranslate"><span class="pre">M</span></code>
+(<code class="docutils literal notranslate"><span class="pre">&quot;54.137M&quot;</span></code> en el ejemplo).</p></li>
+</ul>
+<section id="id13">
+<h2>Parámetros<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>x<span class="classifier">float | int | None</span></dt><dd><p>Valor numérico en millones.</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h2>Retorna<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>str</dt><dd><p>Cadena formateada o <code class="docutils literal notranslate"><span class="pre">&quot;-&quot;</span></code> si el valor no es válido.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.health">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">health</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#app.app.health" title="Link to this definition"></a></dt>
+<dd><p>Devuelve un estado simple de salud del servicio.</p>
+<p>Retorna un JSON con:
+- status: «ok» si el servicio responde.
+- rows: cantidad de filas cargadas en el DataFrame principal (0 durante build de docs o si no hay datos).
+- sphinx_build: flag indicando si se está ejecutando en modo build de documentación.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.layout_acerca">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">layout_acerca</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#layout_acerca"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.layout_acerca" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.layout_home">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">layout_home</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#layout_home"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.layout_home" title="Link to this definition"></a></dt>
+<dd><p>Genera el layout de la página principal (Home).</p>
+<p>Incluye un selector de año, tarjetas con totales y gráficos de evolución,
+distribución por tipo de contratación y rankings de licitantes.</p>
+<section id="id15">
+<h2>Retorna<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dash.html.Div</dt><dd><p>Contenedor con los componentes Dash del layout Home.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.layout_insumos">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">layout_insumos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#layout_insumos"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.layout_insumos" title="Link to this definition"></a></dt>
+<dd><p>Genera el layout de la página de Insumos más contratados.</p>
+<section id="id16">
+<h2>Retorna<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dash.html.Div</dt><dd><p>Contenedor con el selector de año y el espacio para resultados.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.layout_procesos">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">layout_procesos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/app.html#layout_procesos"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#app.app.layout_procesos" title="Link to this definition"></a></dt>
+<dd><p>Genera el layout de la página de «Procesos Filtrados» con filtros.</p>
+<section id="id17">
+<h2>Retorna<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt>dash.html.Div</dt><dd><p>Contenedor con filtros y la tabla de resultados.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.mostrar_pagina">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">mostrar_pagina</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pathname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.mostrar_pagina" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.reload_data_route">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">reload_data_route</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#app.app.reload_data_route" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.serve_static_assets">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">serve_static_assets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.serve_static_assets" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.serve_static_folder">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">serve_static_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.serve_static_folder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.serve_test_file">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">serve_test_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#app.app.serve_test_file" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.serve_test_image">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">serve_test_image</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#app.app.serve_test_image" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="app.app.trigger_reload">
+<span class="sig-prename descclassname"><span class="pre">app.app.</span></span><span class="sig-name descname"><span class="pre">trigger_reload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#app.app.trigger_reload" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
 
 
