@@ -73,6 +73,15 @@ El estándar OCDS (Open Contracting Data Standard) es un marco global para la pu
 - Diagramas circulares para representar la distribución de tipos de contratación.
   
 
+## Novedades 0.1.10
+
+- Página "Insumos" con switches de Medida (Monto/Cantidad) y Vista (Agregado/Por licitante).
+- Top 20 aplicado a tabla y gráfico según la selección.
+- En "Por licitante", el orden del eje Y se basa en el total agregado del insumo (barras apiladas por licitante).
+- Eje Y con todas las etiquetas visibles (altura y margen dinámicos).
+- Etiqueta del eje Y cambiada a "Insumo".
+- Valores por defecto: Monto + Por licitante.
+
 
 ## Información Adicional
 - Para más información sobre el estándar OCDS, visite: [Open Contracting Partnership](https://www.open-contracting.org/).

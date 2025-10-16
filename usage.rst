@@ -33,3 +33,22 @@ Luego ejecute:
 	export OCDS_JSON_URL="https://datosabiertos-compras.mendoza.gov.ar/descargar-json/02/20250810_release.json"
 	export PORT=8050
 	python app/app.py
+
+
+Insumos (métricas y vistas) — v0.1.10
+-------------------------------------
+
+La página "Insumos" incorpora controles para cambiar la métrica y la vista del Top 20:
+
+- Medida:
+	- "Monto (M)": suma en millones por insumo (etiquetas con sufijo M).
+	- "Cantidad": suma de `quantity` por insumo (si está disponible), como entero.
+- Vista:
+	- "Agregado (Ítem)": suma por insumo (Código + Descripción).
+	- "Por licitante": desagrega el insumo por licitante (barras apiladas por color).
+
+Notas:
+- El ranking muestra siempre el Top 20 según la selección.
+- En la vista "Por licitante", el orden de los insumos se define por el total agregado del insumo.
+- El eje Y mantiene visibles todas las etiquetas (altura y márgenes dinámicos).
+- La etiqueta del eje Y es "Insumo".
