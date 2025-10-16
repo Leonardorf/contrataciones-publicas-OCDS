@@ -652,13 +652,35 @@ def actualizar_home(año_sel):
 
     # --- Top 30 montos (tabla) ---
     top30 = df_f.sort_values("monto", ascending=False).head(30).copy()
-    top30["Monto (Millones)"] = top30["monto_millones"].apply(format_mill_int)
+    # Usar dato numérico y aplicar formato visual en DataTable (permite orden numérico correcto)
+    top30["Monto (Millones)"] = top30["monto_millones"]
     top30["fecha"] = top30["fecha"].dt.strftime("%Y-%m-%d")
     top30 = top30.rename(columns={"tender_id": "Proceso", "titulo": "Título", "licitante": "Licitante", "proveedor": "Proveedor"})
     cols_top30 = ["fecha", "Proceso", "Título", "Licitante", "Proveedor", "Monto (Millones)"]
+    columns_out_top30 = [
+        {"name": "Fecha", "id": "fecha"},
+        {"name": "Proceso", "id": "Proceso"},
+        {"name": "Título", "id": "Título"},
+        {"name": "Licitante", "id": "Licitante"},
+        {"name": "Proveedor", "id": "Proveedor"},
+        {
+            "name": "Monto (Millones)",
+            "id": "Monto (Millones)",
+            "type": "numeric",
+            "format": Format(
+                scheme=Scheme.fixed,
+                precision=0,
+                group=Group.yes,
+                groups=3
+            ).group_delimiter('.')
+             .decimal_delimiter(',')
+             .symbol(Symbol.yes)
+             .symbol_suffix('M')
+        }
+    ]
     tabla_top30 = dash_table.DataTable(
         id="tabla-top30",
-        columns=[{"name": c, "id": c} for c in cols_top30],
+        columns=columns_out_top30,
         data=top30[cols_top30].to_dict("records"),
         style_table={"overflowX": "auto"},
         style_cell={"fontSize": "70%"},  # Reducir el tamaño de la fuente al 70%
@@ -733,11 +755,29 @@ def actualizar_insumos(año_sel):
         return html.Div("⚠️ No se encontraron items para este año.")
     df_items = pd.DataFrame(items)
     df_top = df_items.groupby(["Código", "Descripción corta", "Licitante"], as_index=False)["Monto (Millones)"].sum().sort_values("Monto (Millones)", ascending=False).head(30)
-    df_top["Monto (Millones)"] = df_top["Monto (Millones)"].apply(format_mill_int)
 
+    columns_out_insumos = [
+        {"name": "Código", "id": "Código"},
+        {"name": "Descripción corta", "id": "Descripción corta"},
+        {"name": "Licitante", "id": "Licitante"},
+        {
+            "name": "Monto (Millones)",
+            "id": "Monto (Millones)",
+            "type": "numeric",
+            "format": Format(
+                scheme=Scheme.fixed,
+                precision=0,
+                group=Group.yes,
+                groups=3
+            ).group_delimiter('.')
+             .decimal_delimiter(',')
+             .symbol(Symbol.yes)
+             .symbol_suffix('M')
+        }
+    ]
     tabla = dash_table.DataTable(
         id="tabla-insumos",
-        columns=[{"name": c, "id": c} for c in df_top.columns],
+        columns=columns_out_insumos,
         data=df_top.to_dict("records"),
         style_table={"overflowX": "auto"},
         page_size=15,
