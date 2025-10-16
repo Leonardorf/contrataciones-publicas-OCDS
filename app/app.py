@@ -623,16 +623,30 @@ def actualizar_home(año_sel):
 
     # --- Top 10 licitantes (año) ---
     top10 = df_f.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(10, "monto_millones")
-    fig_top10 = px.bar(top10, x="monto_millones", y="licitante", orientation="h",
-                       title=capitalize_title(f"Top 10 Licitantes ({año_sel})"),
-                       labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"})
+    order_top10 = top10.sort_values("monto_millones", ascending=False)["licitante"].tolist()
+    fig_top10 = px.bar(
+        top10,
+        x="monto_millones",
+        y="licitante",
+        orientation="h",
+        title=capitalize_title(f"Top 10 Licitantes ({año_sel})"),
+        labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"},
+        category_orders={"licitante": order_top10}
+    )
     fig_top10.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
 
     # --- Top 20 licitantes (total) ---
     top20 = df.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(20, "monto_millones")
-    fig_top20 = px.bar(top20, x="monto_millones", y="licitante", orientation="h",
-                       title=capitalize_title("Top 20 Licitantes (Total)"),
-                       labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"})
+    order_top20 = top20.sort_values("monto_millones", ascending=False)["licitante"].tolist()
+    fig_top20 = px.bar(
+        top20,
+        x="monto_millones",
+        y="licitante",
+        orientation="h",
+        title=capitalize_title("Top 20 Licitantes (Total)"),
+        labels={"monto_millones": "Monto (Millones)", "licitante": "Licitante"},
+        category_orders={"licitante": order_top20}
+    )
     fig_top20.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
 
     # --- Top 30 montos (tabla) ---
