@@ -791,10 +791,9 @@ def layout_procesos():
     Input("filtro-año", "value"),
     Input("filtro-comprador", "value"),
     Input("filtro-proveedor", "value"),
-    Input("filtro-tipo", "value"),
-    Input("tabla-procesos-filter", "sort_by")
+    Input("filtro-tipo", "value")
 )
-def filtrar_procesos(año, comprador, proveedor, tipo, sort_by):
+def filtrar_procesos(año, comprador, proveedor, tipo):
     """Callback que filtra procesos por año, comprador, proveedor y tipo.
 
     Parámetros
@@ -845,10 +844,8 @@ def filtrar_procesos(año, comprador, proveedor, tipo, sort_by):
 
     # columna Proceso (tender_id), y formateamos monto para mostrar
     df_f = df_f.rename(columns={"tender_id": "Proceso", "titulo": "Título"})
-    df_f["Monto (Millones)"] = df_f["monto_millones"].apply(format_mill_int)
-
-    # Añadimos una columna auxiliar para el ordenamiento correcto
-    df_f["Monto (Millones) Orden"] = df_f["monto_millones"]
+    # Usamos valor numérico en millones para permitir ordenamiento nativo correcto (redondeado)
+    df_f["Monto (Millones)"] = df_f["monto_millones"].round(0)
 
     cols = ["fecha", "Proceso", "Título", "licitante", "proveedor", "Orden de Compra", "Monto (Millones)"]
     # títulos de columnas con capitalización y espacio
@@ -862,29 +859,17 @@ def filtrar_procesos(año, comprador, proveedor, tipo, sort_by):
         {"name": "Monto (Millones)", "id": "Monto (Millones)", "type": "numeric"}
     ]
 
-    # Aplicamos ordenamiento custom si el usuario lo solicita
-    if sort_by and len(sort_by) > 0:
-        for sort in reversed(sort_by):
-            col = sort.get("column_id")
-            direction = sort.get("direction", "asc")
-            if col == "Monto (Millones)":
-                df_f = df_f.sort_values(by=["Monto (Millones) Orden"], ascending=(direction == "asc"), kind="mergesort")
-            else:
-                ascending = (direction == "asc")
-                df_f = df_f.sort_values(by=[col], ascending=ascending, kind="mergesort")
-
     # Incluimos la columna auxiliar en los datos pero no en las columnas visibles
     tabla = dash_table.DataTable(
         id="tabla-procesos-filter",
         columns=columns_out,  # Solo las columnas visibles
-        data=df_f[cols + ["Monto (Millones) Orden"]].to_dict("records"),  # Incluimos la columna auxiliar
+        data=df_f[cols].to_dict("records"),
         style_table={"overflowX": "auto"},
         style_cell={"fontSize": "70%"},  # Reducir el tamaño de la fuente al 70%
         page_size=20,
-        # Usamos ordenamiento personalizado para ordenar por la columna numérica oculta
-        sort_action="custom",
-        sort_mode="multi",
-        sort_by=sort_by or []
+        # Ordenamiento nativo (numérico correcto al usar valores numéricos)
+        sort_action="native",
+        sort_mode="multi"
     )
     return tabla
 
