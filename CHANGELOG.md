@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.10] - 2025-10-16
+
+### Cambios
+- Insumos: agregados switches de Medida (Monto/Cantidad) y Vista (Agregado/Por licitante).
+- Insumos: Top 20 por selección (tabla y gráfico), con formateos adecuados por métrica.
+- Insumos: en vista “detalle”, el orden se basa en el total agregado del insumo; barras apiladas por licitante.
+- Insumos: eje Y con todas las etiquetas visibles (altura dinámica, margen amplio y tickmode fijo).
+- Insumos: etiqueta del eje Y cambiada a “Insumo”; radios por defecto Monto + Por licitante.
+
+---
+
 ## [0.1.9] - 2025-10-16
 
 ### Cambios

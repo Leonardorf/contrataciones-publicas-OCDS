@@ -412,13 +412,20 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
                 for it in its:
                     codigo = (it.get("classification", {}) or {}).get("id") or it.get("id")
                     descripcion = it.get("description")
+                    # cantidad si está disponible
+                    qty_raw = it.get("quantity")
+                    try:
+                        cantidad = float(qty_raw) if qty_raw is not None and str(qty_raw).strip() != "" else 0.0
+                    except Exception:
+                        cantidad = 0.0
                     if codigo and descripcion:
                         items_reg.append({
                             "año": int(r.get("año")) if pd.notna(r.get("año")) else None,
                             "Código": str(codigo),
                             "Descripción corta": str(descripcion)[:80],
                             "Licitante": r.get("licitante"),
-                            "Monto (Millones)": float(r.get("monto_millones") or 0.0)
+                            "Monto (Millones)": float(r.get("monto_millones") or 0.0),
+                            "Cantidad": cantidad
                         })
         df_items = pd.DataFrame(items_reg)
         if not df_items.empty:
@@ -430,6 +437,7 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
             except Exception:
                 pass
             df_items["Monto (Millones)"] = pd.to_numeric(df_items["Monto (Millones)"], errors="coerce", downcast="float").fillna(0.0)
+            df_items["Cantidad"] = pd.to_numeric(df_items["Cantidad"], errors="coerce", downcast="float").fillna(0.0)
 
         # Downcast/categorías en df principal
         df_local["monto"] = pd.to_numeric(df_local["monto"], errors="coerce", downcast="float").fillna(0.0)
@@ -594,7 +602,7 @@ app.layout = dbc.Container([
     dcc.Location(id="url"),
     dcc.Store(id="reload-done"),
     html.Div(id="page-content"),
-    html.P("Versión 0.1.9 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+    html.P("Versión 0.1.10 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
 
 # ------------------------------------------------------
@@ -802,12 +810,41 @@ def layout_insumos():
             value=año_sel,
             clearable=False
         ),
+        dbc.Row([
+            dbc.Col(
+                dcc.RadioItems(
+                    id="insumos-medida",
+                    options=[
+                        {"label": " Monto (M)", "value": "monto"},
+                        {"label": " Cantidad", "value": "cantidad"},
+                    ],
+                    value="monto",
+                    inline=True,
+                ), md="auto"
+            ),
+            dbc.Col(
+                dcc.RadioItems(
+                    id="insumos-vista",
+                    options=[
+                        {"label": " Agregado (Ítem)", "value": "agregado"},
+                        {"label": " Por licitante", "value": "detalle"},
+                    ],
+                    value="detalle",
+                    inline=True,
+                ), md="auto"
+            ),
+        ], className="my-2"),
         html.Div(id="contenido-insumos"),
         html.Hr()
     ])
 
-@app.callback(Output("contenido-insumos", "children"), Input("año-selector-insumos", "value"))
-def actualizar_insumos(año_sel):
+@app.callback(
+    Output("contenido-insumos", "children"),
+    Input("año-selector-insumos", "value"),
+    Input("insumos-medida", "value"),
+    Input("insumos-vista", "value"),
+)
+def actualizar_insumos(año_sel, medida, vista):
     """Callback que arma el Top de insumos y su gráfico para el año dado.
 
     Parámetros
@@ -829,21 +866,37 @@ def actualizar_insumos(año_sel):
         df_items_year["Licitante"] = df_items_year["Licitante"].astype("string")
     except Exception:
         pass
-    df_top = (
+    # Si el usuario selecciona 'cantidad' y la columna no existe, crearla con ceros
+    if medida == "cantidad" and "Cantidad" not in df_items_year.columns:
+        df_items_year["Cantidad"] = 0.0
+    # Configuración según medida y vista
+    medida = (medida or "monto").lower()
+    vista = (vista or "agregado").lower()
+    metric_col = "Monto (Millones)" if medida == "monto" else "Cantidad"
+
+    # 1) Tabla: Top 20 según vista
+    group_cols_detalle = ["Código", "Descripción corta", "Licitante"] if vista == "detalle" else ["Código", "Descripción corta"]
+    df_top_tabla = (
         df_items_year
-        .groupby(["Código", "Descripción corta", "Licitante"], as_index=False, observed=True)["Monto (Millones)"]
+        .groupby(group_cols_detalle, as_index=False, observed=True)[metric_col]
         .sum()
-        .sort_values("Monto (Millones)", ascending=False)
-        .head(30)
+        .rename(columns={metric_col: "Valor"})
+        .sort_values("Valor", ascending=False)
+        .head(20)
     )
 
-    columns_out_insumos = [
+    # Definir columnas de la tabla dinámicamente
+    cols_base = [
         {"name": "Código", "id": "Código"},
         {"name": "Descripción corta", "id": "Descripción corta"},
-        {"name": "Licitante", "id": "Licitante"},
-        {
+    ]
+    if vista == "detalle":
+        cols_base.append({"name": "Licitante", "id": "Licitante"})
+
+    if medida == "monto":
+        valor_col = {
             "name": "Monto (Millones)",
-            "id": "Monto (Millones)",
+            "id": "Valor",
             "type": "numeric",
             "format": Format(
                 scheme=Scheme.fixed,
@@ -855,19 +908,127 @@ def actualizar_insumos(año_sel):
              .symbol(Symbol.yes)
              .symbol_suffix('M')
         }
-    ]
+    else:
+        valor_col = {
+            "name": "Cantidad",
+            "id": "Valor",
+            "type": "numeric",
+            "format": Format(
+                scheme=Scheme.fixed,
+                precision=0,
+                group=Group.yes,
+                groups=3
+            ).group_delimiter('.')
+             .decimal_delimiter(',')
+        }
+    columns_out_insumos = cols_base + [valor_col]
+
     tabla = dash_table.DataTable(
         id="tabla-insumos",
         columns=columns_out_insumos,
-        data=df_top.to_dict("records"),
+        data=df_top_tabla.to_dict("records"),
         style_table={"overflowX": "auto"},
         page_size=15,
         sort_action="native"
     )
-    fig = px.bar(df_top, x="Monto (Millones)", y="Descripción corta", color="Licitante", orientation="h", title=capitalize_title(f"Top 30 Insumos Más Contratados ({año_sel})"))
-    fig.update_traces(hovertemplate="Descripción=%{y}<br>Monto=%{x}")
 
-    return html.Div([tabla, dcc.Graph(figure=fig)])
+    # 2) Gráfico: Top 20 según vista
+    if vista == "agregado":
+        df_top_graf = (
+            df_items_year
+            .groupby(["Código", "Descripción corta"], as_index=False, observed=True)[metric_col]
+            .sum()
+            .rename(columns={metric_col: "Valor"})
+            .sort_values("Valor", ascending=False)
+            .head(20)
+        )
+        order_y = df_top_graf.sort_values("Valor", ascending=False)["Descripción corta"].tolist()
+        fig = px.bar(
+            df_top_graf,
+            x="Valor",
+            y="Descripción corta",
+            orientation="h",
+            title=capitalize_title(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (agregado) ({año_sel})"),
+            labels={"Valor": ("Monto (Millones)" if medida == "monto" else "Cantidad"), "Descripción corta": "Insumo"},
+            category_orders={"Descripción corta": order_y}
+        )
+        # Asegurar visibilidad de todas las etiquetas del eje Y
+        fig.update_layout(height=max(520, 26 * len(order_y) + 100), margin=dict(l=220, r=20, t=60, b=40))
+        fig.update_yaxes(automargin=True, tickmode="array", tickvals=order_y, ticktext=order_y, tickfont=dict(size=11))
+    else:
+        # Obtener Top 20 insumos por total agregado para ordenar correctamente
+        df_agg_items = (
+            df_items_year
+            .groupby(["Código", "Descripción corta"], as_index=False, observed=True)[metric_col]
+            .sum()
+            .rename(columns={metric_col: "TotalItem"})
+            .sort_values("TotalItem", ascending=False)
+            .head(20)
+        )
+        top_keys = set(zip(df_agg_items["Código"], df_agg_items["Descripción corta"]))
+        # Detalle por licitante solo para esos Top 20 insumos
+        df_detail = (
+            df_items_year
+            .groupby(["Código", "Descripción corta", "Licitante"], as_index=False, observed=True)[metric_col]
+            .sum()
+            .rename(columns={metric_col: "Valor"})
+        )
+        df_detail = df_detail[df_detail.apply(lambda r: (r["Código"], r["Descripción corta"]) in top_keys, axis=1)]
+        order_y = df_agg_items["Descripción corta"].tolist()  # orden descendente por total
+        fig = px.bar(
+            df_detail,
+            x="Valor",
+            y="Descripción corta",
+            color="Licitante",
+            orientation="h",
+            title=capitalize_title(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (detalle por licitante) ({año_sel})"),
+            labels={"Valor": ("Monto (Millones)" if medida == "monto" else "Cantidad"), "Descripción corta": "Insumo", "Licitante": "Licitante"},
+            category_orders={"Descripción corta": order_y}
+        )
+        fig.update_layout(barmode='stack')
+        # Asegurar visibilidad de todas las etiquetas del eje Y
+        fig.update_layout(height=max(520, 26 * len(order_y) + 100), margin=dict(l=220, r=20, t=60, b=40))
+        fig.update_yaxes(automargin=True, tickmode="array", tickvals=order_y, ticktext=order_y, tickfont=dict(size=11))
+
+    # Formato de hover/text según medida
+    if medida == "monto":
+        fig.update_traces(hovertemplate="Insumo=%{y}<br>Monto=%{x:.0f}M", texttemplate="%{x:.0f}M", textposition="outside", cliponaxis=False)
+    else:
+        fig.update_traces(hovertemplate="Insumo=%{y}<br>Cantidad=%{x:.0f}", texttemplate="%{x:.0f}", textposition="outside", cliponaxis=False)
+
+    # Textos explicativos
+    if vista == "agregado":
+        explicacion_tabla = html.Small(
+            ("Esta tabla lista el Top 20 de ítems " + ("por monto (M)" if medida == "monto" else "por cantidad") + " agregados por ítem en el año seleccionado."),
+            className="text-muted"
+        )
+        explicacion_grafico = html.Small(
+            ("Este gráfico agrega por ítem (suma de todos los licitantes) y muestra los 20 ítems con mayor " + ("monto (M)" if medida == "monto" else "cantidad") + "."),
+            className="text-muted"
+        )
+        titulo_tabla = html.H5(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (agregado)")
+        titulo_grafico = html.H5(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (agregado)")
+    else:
+        explicacion_tabla = html.Small(
+            ("Esta tabla lista el Top 20 de combinaciones Ítem–Licitante " + ("por monto (M)" if medida == "monto" else "por cantidad") + "."),
+            className="text-muted"
+        )
+        explicacion_grafico = html.Small(
+            ("Este gráfico muestra el Top 20 en detalle por licitante. El color identifica a cada licitante."),
+            className="text-muted"
+        )
+        titulo_tabla = html.H5(f"Top 20 insumos contratados por {'monto' if medida=='monto' else 'cantidad'} (detalle por licitante)")
+        titulo_grafico = html.H5(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (detalle por licitante)")
+
+    # Mensaje si la métrica es toda cero (p. ej. cantidades ausentes)
+    info_extra = None
+    if df_top_tabla["Valor"].sum() == 0:
+        info_extra = html.Div(html.Small("No hay cantidades/montos distintos de cero para este año en la selección actual.", className="text-warning"))
+
+    bloques = [titulo_tabla, tabla, explicacion_tabla, titulo_grafico, dcc.Graph(figure=fig), explicacion_grafico]
+    if info_extra:
+        bloques.append(info_extra)
+    return html.Div(bloques)
 
 # ------------------------------------------------------
 # Página PROCESOS FILTRADOS (filtros y tabla)
