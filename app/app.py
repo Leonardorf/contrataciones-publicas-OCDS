@@ -5,6 +5,7 @@ from dash.dash_table.Format import Format, Group, Scheme, Symbol
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import json, re, os, requests, threading
 import flask
 import gc
@@ -789,7 +790,16 @@ def layout_home():
     """
     años = sorted(df["año"].dropna().unique())
     año_sel = años[-1] if años else None
-    rango = f"{df['fecha'].min().date()} → {df['fecha'].max().date()}"
+    # Rango seguro cuando no hay datos aún (LAZY_LOAD) o fechas NaT
+    try:
+        if df.empty or df["fecha"].dropna().empty:
+            rango = "sin datos aún"
+        else:
+            fmin = pd.to_datetime(df["fecha"], errors="coerce").min()
+            fmax = pd.to_datetime(df["fecha"], errors="coerce").max()
+            rango = f"{fmin.date()} → {fmax.date()}" if pd.notna(fmin) and pd.notna(fmax) else "sin datos aún"
+    except Exception:
+        rango = "sin datos aún"
     return html.Div([
         html.H5(f"📅 Rango de fechas detectado en último Dataset publicado: {rango}"),
         html.P(
@@ -1115,7 +1125,7 @@ def actualizar_insumos(año_sel, medida, vista):
             x="Valor",
             y="Descripción corta",
             orientation="h",
-            title=capitalize_title(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (agregado) ({año_sel})"),
+            title=None,
             labels={"Valor": ("Monto (Millones)" if medida == "monto" else "Cantidad"), "Descripción corta": "Insumo"},
             category_orders={"Descripción corta": order_y}
         )
@@ -1148,7 +1158,7 @@ def actualizar_insumos(año_sel, medida, vista):
             y="Descripción corta",
             color="Licitante",
             orientation="h",
-            title=capitalize_title(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (detalle por licitante) ({año_sel})"),
+            title=None,
             labels={"Valor": ("Monto (Millones)" if medida == "monto" else "Cantidad"), "Descripción corta": "Insumo", "Licitante": "Licitante"},
             category_orders={"Descripción corta": order_y}
         )
@@ -1156,12 +1166,49 @@ def actualizar_insumos(año_sel, medida, vista):
         # Asegurar visibilidad de todas las etiquetas del eje Y
         fig.update_layout(height=max(520, 26 * len(order_y) + 100), margin=dict(l=220, r=20, t=60, b=40))
         fig.update_yaxes(automargin=True, tickmode="array", tickvals=order_y, ticktext=order_y, tickfont=dict(size=11))
+        # Evitar solapamiento: no mostrar etiquetas por segmento; solo mostrar etiqueta del total con una traza de texto
+        fig.update_traces(texttemplate=None, selector=dict(type='bar'))
+        # Totales por insumo para ubicar texto a la derecha
+        df_tot = df_detail.groupby("Descripción corta", as_index=False)["Valor"].sum()
+        totals_map = {k: v for k, v in zip(df_tot["Descripción corta"], df_tot["Valor"])}
+        x_totals = [float(totals_map.get(y, 0.0) or 0.0) for y in order_y]
+        # Formateo del texto de totales
+        if medida == "monto":
+            text_totals = [format_mill_int(v) for v in x_totals]
+        else:
+            text_totals = [f"{int(round(v)):,}".replace(",", ".") for v in x_totals]
+        # Margen extra en X para que entre el texto
+        max_total = max(x_totals) if x_totals else 0.0
+        if max_total > 0:
+            fig.update_xaxes(range=[0, max_total * 1.08])
+        # Agregar traza de texto superpuesta (scatter) con los totales
+        fig.add_trace(
+            go.Scatter(
+                x=x_totals,
+                y=order_y,
+                mode="text",
+                text=text_totals,
+                textposition="middle right",
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+        # Ocultar textos que no entren
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode="hide")
 
     # Formato de hover/text según medida
-    if medida == "monto":
-        fig.update_traces(hovertemplate="Insumo=%{y}<br>Monto=%{x:.0f}M", texttemplate="%{x:.0f}M", textposition="outside", cliponaxis=False)
+    # Formato de hover/text según medida (agregado: etiquetas por barra; detalle: solo hover por segmento)
+    if vista == "agregado":
+        if medida == "monto":
+            fig.update_traces(hovertemplate="Insumo=%{y}<br>Monto=%{x:.0f}M", texttemplate="%{x:.0f}M", textposition="outside", cliponaxis=False)
+        else:
+            fig.update_traces(hovertemplate="Insumo=%{y}<br>Cantidad=%{x:.0f}", texttemplate="%{x:.0f}", textposition="outside", cliponaxis=False)
     else:
-        fig.update_traces(hovertemplate="Insumo=%{y}<br>Cantidad=%{x:.0f}", texttemplate="%{x:.0f}", textposition="outside", cliponaxis=False)
+        # detalle: mantener hover detallado por licitante y sin texto en segmentos (ya se agregó traza de totales)
+        if medida == "monto":
+            fig.update_traces(hovertemplate="Insumo=%{y}<br>Licitante=%{legendgroup}<br>Monto=%{x:.0f}M")
+        else:
+            fig.update_traces(hovertemplate="Insumo=%{y}<br>Licitante=%{legendgroup}<br>Cantidad=%{x:.0f}")
 
     # Textos explicativos
     if vista == "agregado":
@@ -1174,7 +1221,7 @@ def actualizar_insumos(año_sel, medida, vista):
             className="text-muted"
         )
         titulo_tabla = html.H5(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (agregado)")
-        titulo_grafico = html.H5(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (agregado)")
+        titulo_grafico = None
     else:
         explicacion_tabla = html.Small(
             ("Esta tabla lista el Top 20 de combinaciones Ítem–Licitante " + ("por monto (M)" if medida == "monto" else "por cantidad") + "."),
@@ -1185,14 +1232,15 @@ def actualizar_insumos(año_sel, medida, vista):
             className="text-muted"
         )
         titulo_tabla = html.H5(f"Top 20 insumos contratados por {'monto' if medida=='monto' else 'cantidad'} (detalle por licitante)")
-        titulo_grafico = html.H5(f"Top 20 insumos por {'monto' if medida=='monto' else 'cantidad'} (detalle por licitante)")
+        titulo_grafico = None
 
     # Mensaje si la métrica es toda cero (p. ej. cantidades ausentes)
     info_extra = None
     if df_top_tabla["Valor"].sum() == 0:
         info_extra = html.Div(html.Small("No hay cantidades/montos distintos de cero para este año en la selección actual.", className="text-warning"))
 
-    bloques = [titulo_tabla, tabla, explicacion_tabla, titulo_grafico, dcc.Graph(figure=fig), explicacion_grafico]
+    # Armar bloques sin título duplicado para el gráfico
+    bloques = [titulo_tabla, tabla, explicacion_tabla, dcc.Graph(figure=fig), explicacion_grafico]
     if info_extra:
         bloques.append(info_extra)
     return html.Div(bloques)
