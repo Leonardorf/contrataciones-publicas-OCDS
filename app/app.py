@@ -1,6 +1,7 @@
 # Revertimos a la versión 0.1.4 manteniendo las mejoras en los tooltips
 import dash
 from dash import dcc, html, Input, Output, dash_table
+from dash.dash_table import Format, Group, Scheme, Symbol
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
@@ -856,7 +857,20 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         {"name": "Licitante", "id": "licitante"},
         {"name": "Proveedor", "id": "proveedor"},
         {"name": "Orden de Compra", "id": "Orden de Compra"},
-        {"name": "Monto (Millones)", "id": "Monto (Millones)", "type": "numeric"}
+        {
+            "name": "Monto (Millones)",
+            "id": "Monto (Millones)",
+            "type": "numeric",
+            "format": Format(
+                scheme=Scheme.fixed,
+                precision=0,
+                group=Group.yes,
+                groups=3
+            ).group_delimiter('.')
+             .decimal_delimiter(',')
+             .symbol(Symbol.yes)
+             .symbol_suffix('M')
+        }
     ]
 
     # Incluimos la columna auxiliar en los datos pero no en las columnas visibles
