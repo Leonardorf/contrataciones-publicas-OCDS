@@ -634,6 +634,8 @@ def actualizar_home(año_sel):
         category_orders={"licitante": order_top10}
     )
     fig_top10.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
+    # Etiquetas de datos en millones, fuera de la barra, para mejor lectura
+    fig_top10.update_traces(texttemplate="%{x:.0f}M", textposition="outside", cliponaxis=False)
 
     # --- Top 20 licitantes (total) ---
     top20 = df.groupby("licitante", as_index=False)["monto_millones"].sum().nlargest(20, "monto_millones")
@@ -648,6 +650,8 @@ def actualizar_home(año_sel):
         category_orders={"licitante": order_top20}
     )
     fig_top20.update_traces(hovertemplate="Licitante=%{y}<br>Monto=%{x:.0f}M")
+    # Etiquetas de datos en millones, fuera de la barra, para mejor lectura
+    fig_top20.update_traces(texttemplate="%{x:.0f}M", textposition="outside", cliponaxis=False)
 
     # --- Top 30 montos (tabla) ---
     top30 = df_f.sort_values("monto", ascending=False).head(30).copy()
