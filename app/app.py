@@ -519,7 +519,7 @@ app.layout = dbc.Container([
     dcc.Location(id="url"),
     dcc.Store(id="reload-done"),
     html.Div(id="page-content"),
-    html.P("Versión 0.1.5 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+    html.P("Versión 0.1.6 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
 
 # ------------------------------------------------------
