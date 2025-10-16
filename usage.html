@@ -49,9 +49,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contenido Principal:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introducción</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introducción</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#novedades-0-1-10">Novedades 0.1.10</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Uso</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#github-codespaces">GitHub Codespaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#insumos-metricas-y-vistas-v0-1-10">Insumos (métricas y vistas) — v0.1.10</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="methodology.html">Metodología</a></li>
@@ -134,6 +138,33 @@ Luego ejecute:</p>
 python<span class="w"> </span>app/app.py
 </pre></div>
 </div>
+</section>
+<section id="insumos-metricas-y-vistas-v0-1-10">
+<h2>Insumos (métricas y vistas) — v0.1.10<a class="headerlink" href="#insumos-metricas-y-vistas-v0-1-10" title="Link to this heading"></a></h2>
+<p>La página «Insumos» incorpora controles para cambiar la métrica y la vista del Top 20:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Medida:</dt><dd><ul>
+<li><p>«Monto (M)»: suma en millones por insumo (etiquetas con sufijo M).</p></li>
+<li><p>«Cantidad»: suma de <cite>quantity</cite> por insumo (si está disponible), como entero.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Vista:</dt><dd><ul>
+<li><p>«Agregado (Ítem)»: suma por insumo (Código + Descripción).</p></li>
+<li><p>«Por licitante»: desagrega el insumo por licitante (barras apiladas por color).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Notas:
+- El ranking muestra siempre el Top 20 según la selección.
+- En la vista «Por licitante», el orden de los insumos se define por el total agregado del insumo.
+- El eje Y mantiene visibles todas las etiquetas (altura y márgenes dinámicos).
+- La etiqueta del eje Y es «Insumo».</p>
 </section>
 </section>
 

@@ -49,9 +49,13 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contenido Principal:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Introducción</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introducción</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#novedades-0-1-10">Novedades 0.1.10</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Uso</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="usage.html#github-codespaces">GitHub Codespaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#insumos-metricas-y-vistas-v0-1-10">Insumos (métricas y vistas) — v0.1.10</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="methodology.html">Metodología</a></li>
@@ -110,6 +114,24 @@
 <p>Este proyecto implementa un dashboard con Dash para explorar datos de
 contrataciones públicas de la Provincia de Mendoza bajo el estándar OCDS.</p>
 <p>La documentación describe el enfoque, componentes principales y guías de uso.</p>
+<section id="novedades-0-1-10">
+<h2>Novedades 0.1.10<a class="headerlink" href="#novedades-0-1-10" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Página «Insumos» con nuevos switches:</dt><dd><ul>
+<li><p>Medida: Monto (M) o Cantidad.</p></li>
+<li><p>Vista: Agregado (Ítem) o Por licitante.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Top 20 aplicado a tabla y gráfico según la selección.</p></li>
+<li><p>En «Por licitante», el orden del eje Y se basa en el total agregado del insumo (barras apiladas por licitante).</p></li>
+<li><p>Eje Y con todas las etiquetas visibles (altura y margen dinámicos).</p></li>
+<li><p>Etiqueta del eje Y cambiada a «Insumo».</p></li>
+<li><p>Valores por defecto: Monto + Por licitante.</p></li>
+</ul>
+</section>
 </section>
 
 
