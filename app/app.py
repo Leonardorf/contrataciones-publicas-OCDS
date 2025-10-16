@@ -446,13 +446,9 @@ def reload_data_route():
 # ------------------------------------------------------
 # ENCABEZADO CON ESCUDO
 # ------------------------------------------------------
-# Determinar logos: usar locales si existen, con fallback a URLs
-LOGO_GOV_LOCAL = os.path.join("assets", "marca_gov.png")
-LOGO_OCDS_LOCAL = os.path.join("assets", "OCDS-logo-grey.avif")
-LOGO_GOV_SRC = \
-    ("/assets/marca_gov.png" if os.path.exists(LOGO_GOV_LOCAL) else "https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png")
-LOGO_OCDS_SRC = \
-    ("/assets/OCDS-logo-grey.avif" if os.path.exists(LOGO_OCDS_LOCAL) else "https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800")
+# Determinar logos: siempre usar URLs (no usar assets locales)
+LOGO_GOV_SRC = "https://mza-dicaws-portal-uploads-media-prod.s3.amazonaws.com/principal/uploads/2025/10/SITIO-AC_200x200-1-300x300-1.png"
+LOGO_OCDS_SRC = "https://ocp.imgix.net/wp-content/uploads/2020/01/OCDS-logo-grey.png?auto=format&w=1800"
 
 header = dbc.Navbar(
     dbc.Container(
@@ -795,9 +791,10 @@ def layout_procesos():
     Input("filtro-año", "value"),
     Input("filtro-comprador", "value"),
     Input("filtro-proveedor", "value"),
-    Input("filtro-tipo", "value")
+    Input("filtro-tipo", "value"),
+    Input("tabla-procesos-filter", "sort_by")
 )
-def filtrar_procesos(año, comprador, proveedor, tipo):
+def filtrar_procesos(año, comprador, proveedor, tipo, sort_by):
     """Callback que filtra procesos por año, comprador, proveedor y tipo.
 
     Parámetros
@@ -865,6 +862,17 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         {"name": "Monto (Millones)", "id": "Monto (Millones)", "type": "numeric"}
     ]
 
+    # Aplicamos ordenamiento custom si el usuario lo solicita
+    if sort_by and len(sort_by) > 0:
+        for sort in reversed(sort_by):
+            col = sort.get("column_id")
+            direction = sort.get("direction", "asc")
+            if col == "Monto (Millones)":
+                df_f = df_f.sort_values(by=["Monto (Millones) Orden"], ascending=(direction == "asc"), kind="mergesort")
+            else:
+                ascending = (direction == "asc")
+                df_f = df_f.sort_values(by=[col], ascending=ascending, kind="mergesort")
+
     # Incluimos la columna auxiliar en los datos pero no en las columnas visibles
     tabla = dash_table.DataTable(
         id="tabla-procesos-filter",
@@ -873,8 +881,10 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         style_table={"overflowX": "auto"},
         style_cell={"fontSize": "70%"},  # Reducir el tamaño de la fuente al 70%
         page_size=20,
-        sort_action="native",
-        sort_mode="multi"
+        # Usamos ordenamiento personalizado para ordenar por la columna numérica oculta
+        sort_action="custom",
+        sort_mode="multi",
+        sort_by=sort_by or []
     )
     return tabla
 
