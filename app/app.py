@@ -7,11 +7,18 @@ import pandas as pd
 import plotly.express as px
 import json, re, os, requests, threading
 import flask
+import gc
 
 # Habilitar logs detallados para Flask
 import logging
 # Configurar logs para que se muestren en la terminal
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', handlers=[logging.StreamHandler()])
+
+# Activar Copy-on-Write para reducir copias en memoria (pandas >= 2.1)
+try:
+    pd.options.mode.copy_on_write = True
+except Exception:
+    pass
 
 # ------------------------------------------------------
 # CONFIGURACIÓN BASE
@@ -214,11 +221,8 @@ def extraer_contratos(data):
                         "proveedor": proveedor_nombre,
                         "monto": monto,
                         "moneda": moneda,
-                        "contracts": contracts,
-                        "items": tender.get("items", []),
                         "contrato_desc": contrato_desc,
                         "submission_details": submission_details,
-                        "awards": awards,
                         "orden_compra": _obtener_orden_compra(awards, contracts, proveedor_nombre)
                     })
             else:
@@ -230,11 +234,8 @@ def extraer_contratos(data):
                     "proveedor": None,
                     "monto": monto,
                     "moneda": moneda,
-                    "contracts": contracts,
-                    "items": tender.get("items", []),
                     "contrato_desc": contrato_desc,
                     "submission_details": submission_details,
-                    "awards": awards,
                     "orden_compra": None
                 })
 
@@ -379,7 +380,13 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
     last_err = None
     for intento in range(1, max_retries + 1):
         try:
-            raw = cargar_ocds(URL_JSON)
+            # Si STREAM_PARSE=1 y es URL http(s), usar parseo incremental para reducir memoria
+            use_stream = os.getenv("STREAM_PARSE") == "1" and URL_JSON.startswith("http")
+            raw = None
+            if use_stream:
+                logging.info("Usando parseo streaming (ijson)")
+            else:
+                raw = cargar_ocds(URL_JSON)
             break
         except Exception as e:
             last_err = e
@@ -389,7 +396,133 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
                 logging.error("Fallo definitivo tras %d intentos: %s", max_retries, e)
                 raise
             import time as _t; _t.sleep(wait)
-    df_local = extraer_contratos(raw)
+    # Construcción de dataframes: streaming si se solicitó
+    if os.getenv("STREAM_PARSE") == "1" and URL_JSON.startswith("http"):
+        try:
+            import ijson  # type: ignore  # import local opcional
+        except Exception as e:
+            logging.warning("STREAM_PARSE=1 pero no se pudo importar ijson (%s). Volviendo a método estándar.", e)
+            raw = cargar_ocds(URL_JSON)
+            df_local = extraer_contratos(raw)
+        else:
+            # Parseo incremental de releases
+            registros = []
+            items_reg = []
+            headers = {"User-Agent": "OCDS-Mendoza-Dashboard/1.0"}
+            with requests.get(URL_JSON, headers=headers, stream=True, timeout=60) as resp:
+                resp.raise_for_status()
+                resp.raw.decode_content = True
+                for rel in ijson.items(resp.raw, 'releases.item'):
+                    try:
+                        tender = rel.get("tender", {}) or {}
+                        buyer = (rel.get("buyer", {}) or {}).get("name")
+                        awards = rel.get("awards", []) or []
+                        contracts = rel.get("contracts", []) or []
+                        fecha = (
+                            tender.get("period", {}).get("startDate")
+                            or (awards[0].get("date") if awards else None)
+                            or (contracts[0].get("dateSigned") if contracts else None)
+                            or rel.get("date")
+                        )
+                        tender_id = tender.get("id")
+                        contrato_desc = None
+                        if not tender_id and contracts:
+                            desc = contracts[0].get("description", "") or ""
+                            contrato_desc = desc
+                            m = re.search(r"Proceso Nº ([0-9\-]+-[A-Z]+\d+)", desc)
+                            if m:
+                                tender_id = m.group(1)
+                        submission_details = tender.get("submissionMethodDetails")
+
+                        def _obtener_orden_compra_stream(_awards, _contracts, _proveedor):
+                            if not _awards or not _contracts or not _proveedor:
+                                return None
+                            try:
+                                for awd in _awards:
+                                    if awd.get("suppliers"):
+                                        for sup in awd["suppliers"]:
+                                            if sup.get("name") == _proveedor:
+                                                aw_id = awd.get("id")
+                                                for c in (_contracts or []):
+                                                    if c.get("awardID") == aw_id:
+                                                        return c.get("id")
+                                return None
+                            except Exception:
+                                return None
+
+                        # Registros por proveedor en awards
+                        if awards:
+                            for aw in awards:
+                                monto = aw.get("value", {}).get("amount")
+                                moneda = aw.get("value", {}).get("currency")
+                                sups = aw.get("suppliers", []) or []
+                                for sup in sups or [{}]:
+                                    proveedor_nombre = sup.get("name") if sup else None
+                                    registros.append({
+                                        "fecha": fecha,
+                                        "tender_id": tender_id,
+                                        "titulo": tender.get("title"),
+                                        "licitante": buyer,
+                                        "proveedor": proveedor_nombre,
+                                        "monto": monto,
+                                        "moneda": moneda,
+                                        "contrato_desc": contrato_desc,
+                                        "submission_details": submission_details,
+                                        "orden_compra": _obtener_orden_compra_stream(awards, contracts, proveedor_nombre)
+                                    })
+                        else:
+                            registros.append({
+                                "fecha": fecha,
+                                "tender_id": tender_id,
+                                "titulo": tender.get("title"),
+                                "licitante": buyer,
+                                "proveedor": None,
+                                "monto": (awards[0].get("value", {}).get("amount") if awards else None),
+                                "moneda": (awards[0].get("value", {}).get("currency") if awards else None),
+                                "contrato_desc": contrato_desc,
+                                "submission_details": submission_details,
+                                "orden_compra": None
+                            })
+
+                        # Items por release (monto total del release en millones)
+                        try:
+                            monto_millones_rel = 0.0
+                            for aw in awards:
+                                amt = aw.get("value", {}).get("amount")
+                                if amt is not None:
+                                    monto_millones_rel += float(amt) / 1_000_000.0
+                        except Exception:
+                            monto_millones_rel = 0.0
+                        fecha_dt = pd.to_datetime(fecha, errors="coerce") if fecha else pd.NaT
+                        año = int(fecha_dt.year) if pd.notna(fecha_dt) else None
+                        for it in (tender.get("items", []) or []):
+                            codigo = (it.get("classification", {}) or {}).get("id") or it.get("id")
+                            descripcion = it.get("description")
+                            qty_raw = it.get("quantity")
+                            try:
+                                cantidad = float(qty_raw) if qty_raw is not None and str(qty_raw).strip() != "" else 0.0
+                            except Exception:
+                                cantidad = 0.0
+                            if codigo and descripcion:
+                                items_reg.append({
+                                    "año": año,
+                                    "Código": str(codigo),
+                                    "Descripción corta": str(descripcion)[:80],
+                                    "Licitante": buyer,
+                                    "Monto (Millones)": float(monto_millones_rel or 0.0),
+                                    "Cantidad": cantidad
+                                })
+                    except Exception:
+                        # No abortar por un release malformado; continuar
+                        continue
+            # Crear df_local y df_items
+            df_local = pd.DataFrame(registros)
+            if not df_local.empty:
+                df_local["fecha"] = pd.to_datetime(df_local["fecha"], errors="coerce")
+                df_local["año"] = df_local["fecha"].dt.year
+            df_items = pd.DataFrame(items_reg)
+    else:
+        df_local = extraer_contratos(raw)
     if not df_local.empty:
         df_local["tipo_contratacion"] = df_local.apply(
             lambda r: detectar_tipo(r.get("tender_id"), r.get("titulo"), r.get("contrato_desc"), r.get("submission_details")),
@@ -404,15 +537,47 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
         df_local["fecha"] = df_local["fecha_dt"]  # mantener dtype datetime64
         df_local["año"] = df_local["fecha_dt"].dt.year.astype("Int16")
 
-        # Construir df_items global para página Insumos
+        # Limitar a últimos N años para reducir memoria (si se define)
+        try:
+            last_n = int(os.getenv("OCDS_LIMIT_LAST_YEARS", "0"))
+        except Exception:
+            last_n = 0
+        if last_n and last_n > 0:
+            max_year = int(df_local["año"].max()) if not df_local["año"].isna().all() else None
+            if max_year is not None:
+                min_year = max_year - last_n + 1
+                df_local = df_local[df_local["año"] >= min_year]
+
+        # Construir df_items global para página Insumos SIN guardar 'items' en df_local
         items_reg = []
-        for _, r in df_local.iterrows():
-            its = r.get("items") or []
-            if its:
-                for it in its:
+        for rel in raw.get("releases", []) or []:
+            try:
+                tender = rel.get("tender", {}) or {}
+                buyer = (rel.get("buyer", {}) or {}).get("name")
+                # Fecha/año similar a extraer_contratos
+                fecha = (
+                    tender.get("period", {}).get("startDate")
+                    or (rel.get("awards", [{}])[0].get("date") if rel.get("awards") else None)
+                    or (rel.get("contracts", [{}])[0].get("dateSigned") if rel.get("contracts") else None)
+                    or rel.get("date")
+                )
+                año = pd.to_datetime(fecha, errors="coerce").year if fecha else None
+                items_list = tender.get("items", []) or []
+                if not items_list:
+                    continue
+                # monto_millones: tomar por award (por compatibilidad con implementación previa)
+                monto_millones_rel = 0.0
+                awards = rel.get("awards", []) or []
+                for aw in awards:
+                    amt = aw.get("value", {}).get("amount")
+                    try:
+                        if amt is not None:
+                            monto_millones_rel += float(amt) / 1_000_000.0
+                    except Exception:
+                        pass
+                for it in items_list:
                     codigo = (it.get("classification", {}) or {}).get("id") or it.get("id")
                     descripcion = it.get("description")
-                    # cantidad si está disponible
                     qty_raw = it.get("quantity")
                     try:
                         cantidad = float(qty_raw) if qty_raw is not None and str(qty_raw).strip() != "" else 0.0
@@ -420,13 +585,16 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
                         cantidad = 0.0
                     if codigo and descripcion:
                         items_reg.append({
-                            "año": int(r.get("año")) if pd.notna(r.get("año")) else None,
+                            "año": int(año) if año is not None else None,
                             "Código": str(codigo),
                             "Descripción corta": str(descripcion)[:80],
-                            "Licitante": r.get("licitante"),
-                            "Monto (Millones)": float(r.get("monto_millones") or 0.0),
+                            "Licitante": buyer,
+                            "Monto (Millones)": float(monto_millones_rel or 0.0),
                             "Cantidad": cantidad
                         })
+            except Exception:
+                # Continuar si un release tiene formato inesperado
+                continue
         df_items = pd.DataFrame(items_reg)
         if not df_items.empty:
             df_items["año"] = df_items["año"].astype("Int16")
@@ -449,17 +617,16 @@ def _cargar_datos_internamente(max_retries: int = 3, base_delay: float = 2.0):
                 except Exception:
                     pass
 
-        # Eliminar columnas pesadas ya no necesarias en UI
-        for heavy in ["awards", "contracts", "items", "contrato_desc", "submission_details"]:
-            if heavy in df_local.columns:
-                try:
-                    df_local.drop(columns=[heavy], inplace=True)
-                except Exception:
-                    pass
-    data = raw
+        # Ya no guardamos columnas pesadas; mantener solo columnas necesarias
+    data = raw if raw is not None else {"releases": []}
     df = df_local
     _DATA_LOADED = True
     _DATA_ERROR = None
+    # Sugerir GC explícito tras carga
+    try:
+        gc.collect()
+    except Exception:
+        pass
     logging.info("Carga de datos completa. Filas=%d", len(df))
 
 def ensure_data_loaded(force: bool = False):
