@@ -1,7 +1,7 @@
 # Revertimos a la versión 0.1.4 manteniendo las mejoras en los tooltips
 import dash
 from dash import dcc, html, Input, Output, dash_table
-from dash.dash_table import Format, Group, Scheme, Symbol
+from dash.dash_table.Format import Format, Group, Scheme, Symbol
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
@@ -516,7 +516,7 @@ app.layout = dbc.Container([
     dcc.Location(id="url"),
     dcc.Store(id="reload-done"),
     html.Div(id="page-content"),
-    html.P("Versión 0.1.6 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+    html.P("Versión 0.1.7 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
 
 # ------------------------------------------------------
