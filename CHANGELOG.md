@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.8] - 2025-10-15
+
+### Cambios
+- Procesos Filtrados: evita IndexError cuando no hay años disponibles (value seguro en el Dropdown).
+- Procesos Filtrados: ordenamiento correcto por Fecha usando columna interna datetime (fecha_dt) manteniendo formato visible YYYY-MM-DD.
+- Reestructuración del DataTable de Procesos para actualizar solo "data" con sort_action="custom".
+
+---
+
 ## [0.1.7] - 2025-10-15
 
 ### Cambios

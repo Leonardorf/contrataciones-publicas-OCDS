@@ -516,7 +516,7 @@ app.layout = dbc.Container([
     dcc.Location(id="url"),
     dcc.Store(id="reload-done"),
     html.Div(id="page-content"),
-    html.P("Versión 0.1.7 – Dashboard OCDS Mendoza", className="text-muted small text-end")
+    html.P("Versión 0.1.8 – Dashboard OCDS Mendoza", className="text-muted small text-end")
 ], fluid=True)
 
 # ------------------------------------------------------
@@ -808,10 +808,34 @@ def layout_procesos():
         "LPU": "Licitación Pública (LPU)"
     }
 
+    # Definir columnas para el DataTable (visibles) con formato numérico
+    columns_out = [
+        {"name": "Fecha", "id": "fecha"},
+        {"name": "Proceso", "id": "Proceso"},
+        {"name": "Título", "id": "Título"},
+        {"name": "Licitante", "id": "licitante"},
+        {"name": "Proveedor", "id": "proveedor"},
+        {"name": "Orden de Compra", "id": "Orden de Compra"},
+        {
+            "name": "Monto (Millones)",
+            "id": "Monto (Millones)",
+            "type": "numeric",
+            "format": Format(
+                scheme=Scheme.fixed,
+                precision=0,
+                group=Group.yes,
+                groups=3
+            ).group_delimiter('.')
+             .decimal_delimiter(',')
+             .symbol(Symbol.yes)
+             .symbol_suffix('M')
+        }
+    ]
+
     return html.Div([
         html.H4("🔎 Procesos Filtrados"),
         dbc.Row([
-            dbc.Col(dcc.Dropdown(id="filtro-año", options=[{"label": str(a), "value": a} for a in años], value=años[-1], clearable=False), md=3),
+            dbc.Col(dcc.Dropdown(id="filtro-año", options=[{"label": str(a), "value": a} for a in años], value=(años[-1] if años else None), clearable=False, placeholder=("Sin datos" if not años else None)), md=3),
             dbc.Col(dcc.Dropdown(id="filtro-comprador", options=[{"label": c, "value": c} for c in compradores], placeholder="Seleccionar comprador"), md=3),
             dbc.Col(dcc.Dropdown(id="filtro-proveedor", options=[{"label": p, "value": p} for p in proveedores], placeholder="Seleccionar proveedor"), md=3),
             dbc.Col(
@@ -823,18 +847,29 @@ def layout_procesos():
                 md=3
             )
         ], className="mb-3"),
-        html.Div(id="tabla-procesos"),
+        dash_table.DataTable(
+            id="tabla-procesos-filter",
+            columns=columns_out,
+            data=[],
+            style_table={"overflowX": "auto"},
+            style_cell={"fontSize": "70%"},
+            page_size=20,
+            sort_action="custom",
+            sort_mode="multi",
+            sort_by=[]
+        ),
         html.Hr(),
     ])
 
 @app.callback(
-    Output("tabla-procesos", "children"),
+    Output("tabla-procesos-filter", "data"),
     Input("filtro-año", "value"),
     Input("filtro-comprador", "value"),
     Input("filtro-proveedor", "value"),
-    Input("filtro-tipo", "value")
+    Input("filtro-tipo", "value"),
+    Input("tabla-procesos-filter", "sort_by")
 )
-def filtrar_procesos(año, comprador, proveedor, tipo):
+def filtrar_procesos(año, comprador, proveedor, tipo, sort_by):
     """Callback que filtra procesos por año, comprador, proveedor y tipo.
 
     Parámetros
@@ -861,9 +896,12 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
     if tipo:
         df_f = df_f[df_f["tipo_contratacion"] == tipo]
 
-    if df_f.empty:
-        return html.Div("⚠️ No se encontraron procesos con esos filtros.")
+    if año is None or df_f.empty:
+        return []
 
+    # Preservar una columna interna para ordenar correctamente por datetime
+    df_f["fecha_dt"] = pd.to_datetime(df_f["fecha"], errors="coerce")
+    # Formato visible: YYYY-MM-DD (no cambiar)
     df_f["fecha"] = df_f["fecha"].dt.strftime("%Y-%m-%d")
     # Ajustamos la lógica para buscar el award correspondiente al proveedor y luego el contrato
     def obtener_orden_compra(awards, contracts, proveedor):
@@ -913,19 +951,28 @@ def filtrar_procesos(año, comprador, proveedor, tipo):
         }
     ]
 
-    # Incluimos la columna auxiliar en los datos pero no en las columnas visibles
-    tabla = dash_table.DataTable(
-        id="tabla-procesos-filter",
-        columns=columns_out,  # Solo las columnas visibles
-        data=df_f[cols].to_dict("records"),
-        style_table={"overflowX": "auto"},
-        style_cell={"fontSize": "70%"},  # Reducir el tamaño de la fuente al 70%
-        page_size=20,
-        # Ordenamiento nativo (numérico correcto al usar valores numéricos)
-        sort_action="native",
-        sort_mode="multi"
-    )
-    return tabla
+    # Aplicar ordenamiento del lado del servidor si el usuario hizo click en encabezados
+    if sort_by and isinstance(sort_by, list) and len(sort_by) > 0:
+        # Mapear 'fecha' a la columna interna 'fecha_dt' para ordenar correctamente
+        by = []
+        ascending = []
+        for s in sort_by:
+            col = s.get("column_id")
+            direction = s.get("direction", "asc")
+            if col == "fecha":
+                by.append("fecha_dt")
+            else:
+                by.append(col)
+            ascending.append(direction == "asc")
+        try:
+            # mergesort para estabilidad cuando hay empates
+            df_f = df_f.sort_values(by=by, ascending=ascending, kind="mergesort")
+        except Exception:
+            # Si algo falla, no interrumpimos la UI
+            pass
+
+    # Devolver solo los registros (data) en el orden aplicado
+    return df_f[cols].to_dict("records")
 
 # ------------------------------------------------------
 # Página ACERCA DEL PROYECTO
